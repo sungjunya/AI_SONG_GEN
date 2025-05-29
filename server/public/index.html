@@ -4,188 +4,234 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>AI Song Generator</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        .hidden {
-            display: none;
-        }
-
-        .disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-    </style>
+    <title>AI 음악 생성 사이트 (미정 ♮)</title>
+    <link rel="stylesheet" href="style.css" />
 </head>
 
-<body class="bg-gray-100 min-h-screen p-6 font-sans">
-
-    <h1 class="text-4xl font-bold text-center mb-8">🎵 AI Song Generator</h1>
+<body>
+    <header class="site-header">
+        ♮ AI 음악 생성 ♮
+    </header>
 
     <!-- 회원가입 / 로그인 -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-        <!-- Sign Up -->
-        <div class="bg-white p-6 rounded shadow">
-            <h2 class="text-2xl font-semibold mb-4">회원가입</h2>
-            <input id="su-email" type="email" placeholder="이메일" class="w-full p-2 border mb-2 rounded" />
-            <input id="su-username" type="text" placeholder="사용자 이름" class="w-full p-2 border mb-2 rounded" />
-            <input id="su-password" type="password" placeholder="비밀번호" class="w-full p-2 border mb-4 rounded" />
-            <button onclick="signup()"
-                class="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600">가입하기</button>
+    <div class="section" id="authSection">
+        <h2>회원가입</h2>
+        <div class="input-group">
+            <input type="email" id="signupEmail" placeholder="이메일" class="prompt-input" />
+            <input type="password" id="signupPassword" placeholder="비밀번호" class="prompt-input" />
+            <input type="text" id="signupUsername" placeholder="사용자 이름" class="prompt-input" />
+            <button class="generate-btn" onclick="signup()">회원가입</button>
         </div>
-        <!-- Login -->
-        <div class="bg-white p-6 rounded shadow">
-            <h2 class="text-2xl font-semibold mb-4">로그인</h2>
-            <input id="li-email" type="email" placeholder="이메일" class="w-full p-2 border mb-2 rounded" />
-            <input id="li-password" type="password" placeholder="비밀번호" class="w-full p-2 border mb-4 rounded" />
-            <button onclick="login()"
-                class="w-full bg-green-500 text-white py-2 rounded hover:bg-green-600">로그인</button>
-            <p class="mt-4 text-sm">토큰: <span id="token-display" class="font-mono break-all"></span></p>
+
+        <h2>로그인</h2>
+        <div class="input-group">
+            <input type="email" id="loginEmail" placeholder="이메일" class="prompt-input" />
+            <input type="password" id="loginPassword" placeholder="비밀번호" class="prompt-input" />
+            <button class="generate-btn" onclick="login()">로그인</button>
+        </div>
+        <p id="authMessage" style="color:red;"></p>
+    </div>
+
+    <!-- 프롬프트 입력 + 이미지 업로드 -->
+    <div class="section" id="generateSection" style="display:none">
+        <h2>1. 프롬프트 입력 또는 이미지 업로드</h2>
+        <div class="input-group">
+            <input type="text" id="promptInput" placeholder="프롬프트를 입력하세요" class="prompt-input" />
+            <div id="dropZone" class="drop-zone">
+                <p>이미지를 드래그하거나 클릭하여 업로드하세요 📷</p>
+                <input type="file" accept="image/*" id="imageInput" hidden />
+            </div>
+        </div>
+
+        <h2>2. 생성 옵션 선택</h2>
+        <div class="selection-group">
+            <div class="mandatory-options options">
+                <div class="option-btn active" data-type="both">가사+멜로디</div>
+                <div class="option-btn" data-type="lyrics">가사만</div>
+                <div class="option-btn" data-type="melody">멜로디만</div>
+            </div>
+            <div class="category-options options">
+                <div class="option-btn" onclick="toggleCategory(this,'genre')">장르</div>
+                <div class="option-btn" onclick="toggleCategory(this,'mood')">분위기</div>
+                <div class="option-btn" onclick="toggleCategory(this,'activity')">활동</div>
+            </div>
+            <div id="subOptions"></div>
+        </div>
+
+        <div class="section">
+            <h2>3. 악보 옵션</h2>
+            <label class="checkbox-label">
+                <input type="checkbox" id="sheetOption" />
+                악보 보기
+            </label>
+        </div>
+
+        <button class="generate-btn" onclick="generateContent()">음악 생성</button>
+
+        <div id="results" style="margin-top:20px;">
+            <h3>생성된 가사</h3>
+            <pre id="lyrics" class="drop-zone">여기에 가사가 표시됩니다.</pre>
+            <h3>생성된 멜로디 설명</h3>
+            <pre id="melody" class="drop-zone">여기에 멜로디 설명이 표시됩니다.</pre>
+            <button class="generate-btn" onclick="saveSong()">저장하기</button>
+            <p id="saveMessage" style="color:green;"></p>
         </div>
     </div>
 
-    <!-- AI 가사 & 멜로디 생성 -->
-    <div class="bg-white p-6 rounded shadow mb-8">
-        <h2 class="text-2xl font-semibold mb-4">AI 가사 & 멜로디 생성</h2>
-        <input id="prompt" type="text" placeholder="프롬프트 입력 (예: 사랑, 이별)" class="w-full p-2 border mb-4 rounded" />
-        <div class="flex gap-2 mb-4">
-            <button onclick="generateLyrics()"
-                class="flex-1 bg-indigo-500 text-white py-2 rounded hover:bg-indigo-600">가사 생성</button>
-            <button onclick="generateMelody()"
-                class="flex-1 bg-purple-500 text-white py-2 rounded hover:bg-purple-600">멜로디 생성</button>
-        </div>
-        <div id="ai-results" class="space-y-4">
-            <div>
-                <h3 class="font-semibold">🎤 생성된 가사</h3>
-                <pre id="lyrics" class="bg-gray-50 p-3 rounded min-h-[80px] text-gray-800">아직 생성되지 않았습니다.</pre>
-            </div>
-            <div>
-                <h3 class="font-semibold">🎼 생성된 멜로디 설명</h3>
-                <pre id="melody" class="bg-gray-50 p-3 rounded min-h-[80px] text-gray-800">아직 생성되지 않았습니다.</pre>
-            </div>
-        </div>
-        <button id="save-btn" onclick="saveSong()"
-            class="mt-4 w-full bg-teal-500 text-white py-2 rounded hover:bg-teal-600 disabled:bg-gray-400 disabled:cursor-not-allowed"
-            disabled>
-            생성 결과 저장
-        </button>
-    </div>
-
-    <!-- 내 노래 목록 -->
-    <div class="bg-white p-6 rounded shadow">
-        <h2 class="text-2xl font-semibold mb-4">내 노래 목록</h2>
-        <button onclick="loadSongs()"
-            class="mb-4 bg-yellow-500 text-white py-2 rounded hover:bg-yellow-600">불러오기</button>
-        <ul id="song-list" class="space-y-2 text-gray-700"></ul>
+    <!-- 내가 저장한 노래 -->
+    <div class="section" id="mySongsSection" style="display:none">
+        <h2>내가 저장한 노래</h2>
+        <ul id="songList"></ul>
     </div>
 
     <script>
-        let token = '';
-        let lastLyrics = '';
-        let lastMelody = '';
+        // 이미지 드래그&드롭
+        const dropZone = document.getElementById("dropZone");
+        const imageInput = document.getElementById("imageInput");
 
-        async function signup() {
-            const email = document.getElementById('su-email').value;
-            const username = document.getElementById('su-username').value;
-            const password = document.getElementById('su-password').value;
-            const res = await fetch('/signup', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, username, password })
-            });
-            const data = await res.json();
-            alert(data.message || data.error);
+        dropZone.addEventListener("click", () => imageInput.click());
+        dropZone.addEventListener("dragover", e => {
+            e.preventDefault();
+            dropZone.style.borderColor = "#007aff";
+        });
+        dropZone.addEventListener("dragleave", e => {
+            e.preventDefault();
+            dropZone.style.borderColor = "#ccc";
+        });
+        dropZone.addEventListener("drop", e => {
+            e.preventDefault();
+            dropZone.style.borderColor = "#ccc";
+            if (e.dataTransfer.files.length) handleFiles(e.dataTransfer.files);
+        });
+        imageInput.addEventListener("change", () => {
+            if (imageInput.files.length) handleFiles(imageInput.files);
+        });
+        function handleFiles(files) {
+            const file = files[0];
+            if (!file.type.startsWith("image/")) return alert("이미지 파일만 업로드 가능합니다.");
+            const reader = new FileReader();
+            reader.onload = e => {
+                dropZone.innerHTML = `<img src="${e.target.result}" alt="Uploaded Image" style="max-height:70px; max-width:100%; border-radius:8px;">`;
+            };
+            reader.readAsDataURL(file);
         }
 
-        async function login() {
-            const email = document.getElementById('li-email').value;
-            const password = document.getElementById('li-password').value;
-            const res = await fetch('/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, password })
-            });
-            const data = await res.json();
-            if (data.token) {
-                token = data.token;
-                document.getElementById('token-display').textContent = token;
-                alert('로그인 성공');
-            } else {
-                alert(data.error);
-            }
+        // 옵션 버튼
+        document.querySelectorAll('.mandatory-options .option-btn')
+            .forEach(btn => btn.addEventListener('click', () => selectExclusive(btn)));
+
+        function selectExclusive(btn) {
+            const group = btn.dataset.type ? 'mandatory-options' : btn.dataset.group;
+            document.querySelectorAll(`.${group} .option-btn`)
+                .forEach(b => b.classList.remove("active"));
+            btn.classList.add("active");
         }
 
-        async function generateLyrics() {
-            const prompt = document.getElementById('prompt').value.trim();
-            if (!prompt) return alert('프롬프트를 입력하세요.');
-            document.getElementById('lyrics').textContent = '생성 중...';
-            const res = await fetch('/generate-lyrics', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ prompt })
-            });
-            const data = await res.json();
-            if (data.lyrics) {
-                lastLyrics = data.lyrics;
-                document.getElementById('lyrics').textContent = data.lyrics;
-                document.getElementById('save-btn').disabled = !(lastLyrics && lastMelody && token);
-            } else {
-                alert(data.error);
-            }
+        function toggleCategory(btn, category) {
+            const sub = document.getElementById("subOptions");
+            const active = btn.classList.toggle("active");
+            if (!active) return sub.innerHTML = "";
+            document.querySelectorAll(".category-options .option-btn")
+                .forEach(b => b !== btn && b.classList.remove("active"));
+
+            let opts = [];
+            if (category === "genre") opts = ["🎵 장르", "팝", "재즈", "클래식", "힙합", "일렉트로닉"];
+            if (category === "mood") opts = ["🎵 분위기", "활기찬", "슬픈", "로맨틱", "잔잔한"];
+            if (category === "activity") opts = ["🎵 활동", "집중", "러닝", "휴식", "공부", "여행"];
+
+            sub.innerHTML = opts.map((o, i) =>
+                `<span class="sub-option" style="${i === 0 ? 'font-weight:bold' : ''}">${o}</span>`
+            ).join("");
         }
 
-        async function generateMelody() {
-            const prompt = document.getElementById('prompt').value.trim();
-            if (!prompt) return alert('프롬프트를 입력하세요.');
-            document.getElementById('melody').textContent = '생성 중...';
-            const res = await fetch('/generate-melody', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ prompt })
-            });
-            const data = await res.json();
-            if (data.melody) {
-                lastMelody = data.melody;
-                document.getElementById('melody').textContent = data.melody;
-                document.getElementById('save-btn').disabled = !(lastLyrics && lastMelody && token);
-            } else {
-                alert(data.error);
-            }
+        // 백엔드 호출용
+        let authToken = null;
+        function signup() {
+            const email = signupEmail.value, pw = signupPassword.value, user = signupUsername.value;
+            fetch('/signup', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, pw, password: pw, username: user })
+            })
+                .then(r => r.json()).then(j => {
+                    authMessage.textContent = j.error || j.message;
+                });
+        }
+        function login() {
+            fetch('/login', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: loginEmail.value, password: loginPassword.value })
+            })
+                .then(r => r.json()).then(j => {
+                    if (j.token) {
+                        authToken = j.token;
+                        authSection.style.display = 'none';
+                        generateSection.style.display = 'block';
+                        mySongsSection.style.display = 'block';
+                        loadMySongs();
+                    } else authMessage.textContent = j.error;
+                });
         }
 
-        async function saveSong() {
-            if (!token) return alert('로그인이 필요합니다.');
-            const prompt = document.getElementById('prompt').value.trim();
-            const res = await fetch('/songs', {
+        async function generateContent() {
+            // UI 로그
+            generateMusic();
+            const prompt = promptInput.value.trim();
+            if (!prompt) { alert('프롬프트를 입력하세요.'); return; }
+            lyrics.textContent = '생성 중...'; melody.textContent = '생성 중...';
+
+            const type = document.querySelector('.mandatory-options .active').dataset.type;
+            const calls = [];
+            if (type === 'both' || type === 'lyrics')
+                calls.push(fetch('/generate-lyrics', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ prompt })
+                }).then(r => r.json()).then(j => lyrics.textContent = j.lyrics || j.error));
+            if (type === 'both' || type === 'melody')
+                calls.push(fetch('/generate-melody', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ prompt })
+                }).then(r => r.json()).then(j => melody.textContent = j.melody || j.error));
+            await Promise.all(calls);
+        }
+
+        function generateMusic() {
+            const prompt = promptInput.value;
+            const sheet = sheetOption.checked;
+            const main = document.querySelector('.mandatory-options .active').innerText;
+            const cat = document.querySelector('.category-options .active')?.innerText;
+            const subs = Array.from(document.querySelectorAll('#subOptions .sub-option'))
+                .slice(1).map(el => el.innerText);
+            console.log({ prompt, sheet, main, cat, subs });
+        }
+
+        function saveSong() {
+            fetch('/songs', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': 'Bearer ' + token
-                },
+                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + authToken },
                 body: JSON.stringify({
-                    prompt,
-                    lyrics: lastLyrics,
-                    audio_url: null  // 나중에 실제 오디오 URL이 있으면 넣어주세요
+                    prompt: promptInput.value,
+                    lyrics: lyrics.textContent,
+                    audio_url: null
                 })
-            });
-            const data = await res.json();
-            alert(data.message || data.error);
+            })
+                .then(r => r.json()).then(j => {
+                    saveMessage.textContent = j.message || j.error;
+                    if (j.message) loadMySongs();
+                });
         }
 
-        async function loadSongs() {
-            if (!token) return alert('로그인이 필요합니다.');
-            const res = await fetch('/songs', {
-                headers: { 'Authorization': 'Bearer ' + token }
-            });
-            const list = document.getElementById('song-list');
-            list.innerHTML = '';
-            const data = await res.json();
-            data.forEach(song => {
-                const li = document.createElement('li');
-                li.className = 'border-b py-2';
-                li.innerHTML = `<strong>${new Date(song.created_at).toLocaleString()}</strong>: ${song.prompt}`;
-                list.append(li);
-            });
+        function loadMySongs() {
+            fetch('/songs', { headers: { 'Authorization': 'Bearer ' + authToken } })
+                .then(r => r.json()).then(list => {
+                    songList.innerHTML = '';
+                    list.forEach(s => {
+                        const li = document.createElement('li');
+                        li.textContent = `[${new Date(s.created_at).toLocaleString()}] ${s.prompt}`;
+                        songList.appendChild(li);
+                    });
+                });
         }
     </script>
 </body>
