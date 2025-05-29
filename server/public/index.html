@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI Song Generator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .hidden {
+            display: none;
+        }
+
+        .disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-100 min-h-screen p-6 font-sans">
+
+    <h1 class="text-4xl font-bold text-center mb-8">🎵 AI Song Generator</h1>
+
+    <!-- 회원가입 / 로그인 -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        <!-- Sign Up -->
+        <div class="bg-white p-6 rounded shadow">
+            <h2 class="text-2xl font-semibold mb-4">회원가입</h2>
+            <input id="su-email" type="email" placeholder="이메일" class="w-full p-2 border mb-2 rounded" />
+            <input id="su-username" type="text" placeholder="사용자 이름" class="w-full p-2 border mb-2 rounded" />
+            <input id="su-password" type="password" placeholder="비밀번호" class="w-full p-2 border mb-4 rounded" />
+            <button onclick="signup()"
+                class="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600">가입하기</button>
+        </div>
+        <!-- Login -->
+        <div class="bg-white p-6 rounded shadow">
+            <h2 class="text-2xl font-semibold mb-4">로그인</h2>
+            <input id="li-email" type="email" placeholder="이메일" class="w-full p-2 border mb-2 rounded" />
+            <input id="li-password" type="password" placeholder="비밀번호" class="w-full p-2 border mb-4 rounded" />
+            <button onclick="login()"
+                class="w-full bg-green-500 text-white py-2 rounded hover:bg-green-600">로그인</button>
+            <p class="mt-4 text-sm">토큰: <span id="token-display" class="font-mono break-all"></span></p>
+        </div>
+    </div>
+
+    <!-- AI 가사 & 멜로디 생성 -->
+    <div class="bg-white p-6 rounded shadow mb-8">
+        <h2 class="text-2xl font-semibold mb-4">AI 가사 & 멜로디 생성</h2>
+        <input id="prompt" type="text" placeholder="프롬프트 입력 (예: 사랑, 이별)" class="w-full p-2 border mb-4 rounded" />
+        <div class="flex gap-2 mb-4">
+            <button onclick="generateLyrics()"
+                class="flex-1 bg-indigo-500 text-white py-2 rounded hover:bg-indigo-600">가사 생성</button>
+            <button onclick="generateMelody()"
+                class="flex-1 bg-purple-500 text-white py-2 rounded hover:bg-purple-600">멜로디 생성</button>
+        </div>
+        <div id="ai-results" class="space-y-4">
+            <div>
+                <h3 class="font-semibold">🎤 생성된 가사</h3>
+                <pre id="lyrics" class="bg-gray-50 p-3 rounded min-h-[80px] text-gray-800">아직 생성되지 않았습니다.</pre>
+            </div>
+            <div>
+                <h3 class="font-semibold">🎼 생성된 멜로디 설명</h3>
+                <pre id="melody" class="bg-gray-50 p-3 rounded min-h-[80px] text-gray-800">아직 생성되지 않았습니다.</pre>
+            </div>
+        </div>
+        <button id="save-btn" onclick="saveSong()"
+            class="mt-4 w-full bg-teal-500 text-white py-2 rounded hover:bg-teal-600 disabled:bg-gray-400 disabled:cursor-not-allowed"
+            disabled>
+            생성 결과 저장
+        </button>
+    </div>
+
+    <!-- 내 노래 목록 -->
+    <div class="bg-white p-6 rounded shadow">
+        <h2 class="text-2xl font-semibold mb-4">내 노래 목록</h2>
+        <button onclick="loadSongs()"
+            class="mb-4 bg-yellow-500 text-white py-2 rounded hover:bg-yellow-600">불러오기</button>
+        <ul id="song-list" class="space-y-2 text-gray-700"></ul>
+    </div>
+
+    <script>
+        let token = '';
+        let lastLyrics = '';
+        let lastMelody = '';
+
+        async function signup() {
+            const email = document.getElementById('su-email').value;
+            const username = document.getElementById('su-username').value;
+            const password = document.getElementById('su-password').value;
+            const res = await fetch('/signup', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, username, password })
+            });
+            const data = await res.json();
+            alert(data.message || data.error);
+        }
+
+        async function login() {
+            const email = document.getElementById('li-email').value;
+            const password = document.getElementById('li-password').value;
+            const res = await fetch('/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
+            });
+            const data = await res.json();
+            if (data.token) {
+                token = data.token;
+                document.getElementById('token-display').textContent = token;
+                alert('로그인 성공');
+            } else {
+                alert(data.error);
+            }
+        }
+
+        async function generateLyrics() {
+            const prompt = document.getElementById('prompt').value.trim();
+            if (!prompt) return alert('프롬프트를 입력하세요.');
+            document.getElementById('lyrics').textContent = '생성 중...';
+            const res = await fetch('/generate-lyrics', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ prompt })
+            });
+            const data = await res.json();
+            if (data.lyrics) {
+                lastLyrics = data.lyrics;
+                document.getElementById('lyrics').textContent = data.lyrics;
+                document.getElementById('save-btn').disabled = !(lastLyrics && lastMelody && token);
+            } else {
+                alert(data.error);
+            }
+        }
+
+        async function generateMelody() {
+            const prompt = document.getElementById('prompt').value.trim();
+            if (!prompt) return alert('프롬프트를 입력하세요.');
+            document.getElementById('melody').textContent = '생성 중...';
+            const res = await fetch('/generate-melody', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ prompt })
+            });
+            const data = await res.json();
+            if (data.melody) {
+                lastMelody = data.melody;
+                document.getElementById('melody').textContent = data.melody;
+                document.getElementById('save-btn').disabled = !(lastLyrics && lastMelody && token);
+            } else {
+                alert(data.error);
+            }
+        }
+
+        async function saveSong() {
+            if (!token) return alert('로그인이 필요합니다.');
+            const prompt = document.getElementById('prompt').value.trim();
+            const res = await fetch('/songs', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + token
+                },
+                body: JSON.stringify({
+                    prompt,
+                    lyrics: lastLyrics,
+                    audio_url: null  // 나중에 실제 오디오 URL이 있으면 넣어주세요
+                })
+            });
+            const data = await res.json();
+            alert(data.message || data.error);
+        }
+
+        async function loadSongs() {
+            if (!token) return alert('로그인이 필요합니다.');
+            const res = await fetch('/songs', {
+                headers: { 'Authorization': 'Bearer ' + token }
+            });
+            const list = document.getElementById('song-list');
+            list.innerHTML = '';
+            const data = await res.json();
+            data.forEach(song => {
+                const li = document.createElement('li');
+                li.className = 'border-b py-2';
+                li.innerHTML = `<strong>${new Date(song.created_at).toLocaleString()}</strong>: ${song.prompt}`;
+                list.append(li);
+            });
+        }
+    </script>
+</body>
+
+</html>
