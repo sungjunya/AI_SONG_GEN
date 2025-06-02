@@ -1,3 +1,4 @@
+<!-- server/public/index.html -->
 <!DOCTYPE html>
 <html lang="ko">
 
@@ -10,14 +11,20 @@
 
 <body>
     <header class="site-header">
-        <h1>♮ AI 음악 생성 ♮</h1>
-        <div id="headerControls" class="header-buttons">
-            <button id="loginBtn" class="auth-btn">로그인</button>
-            <button id="signupBtn" class="auth-btn">회원가입</button>
+        <div class="header-left">
+            <h1>♮ AI 음악 생성 ♮</h1>
         </div>
-        <div id="profileSection" class="header-profile hidden">
-            <span id="profileName"></span>
-            <button id="logoutBtn" class="auth-btn">로그아웃</button>
+        <div class="header-right">
+            <!-- 로그인/회원가입 버튼 (로그인 전) -->
+            <div id="headerControls" class="header-buttons">
+                <button id="loginBtn" class="auth-btn">로그인</button>
+                <button id="signupBtn" class="auth-btn">회원가입</button>
+            </div>
+            <!-- 프로필 영역 (로그인 후) -->
+            <div id="profileSection" class="header-profile hidden">
+                <span id="profileName"></span>
+                <button id="logoutBtn" class="auth-btn">로그아웃</button>
+            </div>
         </div>
     </header>
 
@@ -43,14 +50,14 @@
             <div class="input-group">
                 <input id="signupEmail" type="email" placeholder="이메일" class="prompt-input" />
                 <input id="signupPassword" type="password" placeholder="비밀번호" class="prompt-input" />
-                <input id="signupUsername" type="text" placeholder="사용자 이름" class="prompt-input" />
+                <input id="signupUsername" type="text" placeholder="닉네임" class="prompt-input" />
                 <button id="signupSubmit" class="generate-btn">회원가입</button>
             </div>
             <p id="signupMessage" class="message error"></p>
         </div>
     </div>
 
-    <!-- 생성 섹션 -->
+    <!-- AI 생성 섹션 (로그인 후 보이기) -->
     <section id="generateSection" class="section hidden">
         <h2>1. 프롬프트 또는 이미지</h2>
         <div class="input-group">
@@ -91,28 +98,30 @@
         </div>
     </section>
 
-    <!-- 내가 저장한 노래 & 즐겨찾기·댓글 -->
+    <!-- 내 노래 & 공개 노래 섹션 (로그인 후 보이기) -->
     <section id="mySongsSection" class="section hidden">
         <h2>내가 저장한 노래</h2>
         <ul id="songList" class="song-list"></ul>
     </section>
 
+    <section id="allSongsSection" class="section hidden">
+        <h2>공개된 모든 노래</h2>
+        <ul id="allSongList" class="song-list"></ul>
+    </section>
+
     <!-- 댓글 모달 -->
     <div id="commentModal" class="modal hidden">
-        <div class="modal-content">
+        <div class="modal-content large">
             <span id="closeComment" class="close">&times;</span>
             <h2>댓글</h2>
-            <div id="commentList" class="comment-list"></div>
-            <textarea id="newComment" placeholder="댓글을 입력하세요…" class="prompt-input"></textarea>
-            <button id="postCommentBtn" class="generate-btn">댓글 달기</button>
+            <ul id="commentList" class="comment-list"></ul>
+            <div class="input-group comment-input-group">
+                <input id="commentInput" type="text" placeholder="댓글을 입력하세요" class="prompt-input comment-field" />
+                <button id="commentSubmit" class="generate-btn">등록</button>
+            </div>
+            <p id="commentMessage" class="message error"></p>
         </div>
     </div>
-
-    <li data-id="SONG_ID">
-        <span>…노래 제목/프롬프트…</span>
-        <button class="fav-btn">★</button>
-        <button class="comment-btn">💬</button>
-    </li>
 
     <script src="script.js"></script>
 </body>

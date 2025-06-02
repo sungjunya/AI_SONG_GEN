@@ -1,117 +1,106 @@
 // server/routes/auth.js
-const express = require('express')
-const mysql = require('mysql2/promise')
-const bcrypt = require('bcrypt')
-const jwt = require('jsonwebtoken')
-const router = express.Router()
 
-// MySQL 풀 생성
+const express = require('express');
+const mysql = require('mysql2/promise');
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+
+const router = express.Router();
+
+// ----- MySQL 연결 풀 설정 ----- //
 const pool = mysql.createPool({
     host: process.env.DB_HOST,
     user: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
     database: process.env.DB_NAME,
     charset: 'utf8mb4',
-})
+    waitForConnections: true,
+    connectionLimit: 10,
+    queueLimit: 0,
+});
 
-// 연결 테스트
+// 연결 테스트 (옵션)
 pool.getConnection()
-    .then(conn => { console.log('✅ MySQL 연결 성공'); conn.release() })
-    .catch(err => console.error('❌ MySQL 연결 실패:', err.message))
+    .then(() => console.log('✅ MySQL 연결 성공 (auth.js)'))
+    .catch(err => console.error('❌ MySQL 연결 실패 (auth.js):', err.message));
 
-// 회원가입
-router.post('/signup', async (req, res) => {
-    const { email, password, username } = req.body
-    if (!email || !password || !username) {
-        return res.status(400).json({ error: '모든 필드를 입력하세요.' })
-    }
+// ----- JWT 검증 미들웨어 ----- //
+const authenticate = (req, res, next) => {
+    const authHeader = req.headers.authorization;
+    if (!authHeader) return res.status(401).json({ error: '로그인이 필요합니다.' });
+
+    const token = authHeader.split(' ')[1];
+    if (!token) return res.status(401).json({ error: '토큰이 제공되지 않았습니다.' });
+
     try {
-        const hash = await bcrypt.hash(password, 10)
+        const payload = jwt.verify(token, process.env.JWT_SECRET);
+        req.userId = payload.userId;
+        req.username = payload.username;
+        next();
+    } catch (err) {
+        return res.status(401).json({ error: '유효하지 않은 토큰입니다.' });
+    }
+};
+
+// -------------------------
+// 1) 회원가입 (/signup)
+// -------------------------
+router.post('/signup', async (req, res) => {
+    const { email, password, username } = req.body;
+    if (!email || !password || !username) {
+        return res.status(400).json({ error: '모든 필드를 입력하세요.' });
+    }
+
+    try {
+        const hashedPw = await bcrypt.hash(password, 10);
         await pool.execute(
             'INSERT INTO users (email, password, username) VALUES (?, ?, ?)',
-            [email, hash, username]
-        )
-        res.json({ message: '회원가입 성공' })
-    } catch (e) {
-        if (e.code === 'ER_DUP_ENTRY') {
-            return res.status(400).json({ error: '이미 존재하는 이메일입니다.' })
+            [email, hashedPw, username]
+        );
+        return res.status(201).json({ message: '회원가입 성공' });
+    } catch (err) {
+        console.error('회원가입 에러:', err);
+        if (err.code === 'ER_DUP_ENTRY') {
+            return res.status(400).json({ error: '이미 존재하는 이메일입니다.' });
         }
-        console.error(e)
-        res.status(500).json({ error: '서버 에러' })
+        return res.status(500).json({ error: '서버 오류로 회원가입에 실패했습니다.' });
     }
-})
+});
 
-// 로그인
+// -------------------------
+// 2) 로그인 (/login)
+// -------------------------
 router.post('/login', async (req, res) => {
-    const { email, password } = req.body
+    const { email, password } = req.body;
     if (!email || !password) {
-        return res.status(400).json({ error: '이메일과 비밀번호를 입력하세요.' })
+        return res.status(400).json({ error: '이메일과 비밀번호를 입력하세요.' });
     }
+
     try {
         const [rows] = await pool.execute(
-            'SELECT * FROM users WHERE email = ?', [email]
-        )
-        const user = rows[0]
-        if (!user || !(await bcrypt.compare(password, user.password))) {
-            return res.status(401).json({ error: '잘못된 이메일 또는 비밀번호' })
+            'SELECT id, password, username FROM users WHERE email = ?',
+            [email]
+        );
+        if (rows.length === 0) {
+            return res.status(401).json({ error: '잘못된 이메일 또는 비밀번호입니다.' });
         }
+
+        const user = rows[0];
+        const match = await bcrypt.compare(password, user.password);
+        if (!match) {
+            return res.status(401).json({ error: '잘못된 이메일 또는 비밀번호입니다.' });
+        }
+
         const token = jwt.sign(
             { userId: user.id, username: user.username },
             process.env.JWT_SECRET,
-            { expiresIn: '1h' }
-        )
-        res.json({ token, username: user.username })
-    } catch (e) {
-        console.error(e)
-        res.status(500).json({ error: '서버 에러' })
+            { expiresIn: '24h' }
+        );
+        return res.json({ token, username: user.username });
+    } catch (err) {
+        console.error('로그인 에러:', err);
+        return res.status(500).json({ error: '서버 오류로 로그인에 실패했습니다.' });
     }
-})
+});
 
-// 노래 저장
-router.post('/songs', async (req, res) => {
-    const { prompt, lyrics, audio_url } = req.body
-    const auth = req.headers.authorization?.split(' ')[1]
-    if (!auth) return res.status(401).json({ error: '로그인이 필요합니다.' })
-
-    let userId
-    try {
-        userId = jwt.verify(auth, process.env.JWT_SECRET).userId
-    } catch {
-        return res.status(401).json({ error: '토큰이 유효하지 않습니다.' })
-    }
-    try {
-        await pool.execute(
-            'INSERT INTO songs (user_id, prompt, lyrics, audio_url) VALUES (?, ?, ?, ?)',
-            [userId, prompt, lyrics || null, audio_url || null]
-        )
-        res.json({ message: '노래 저장 성공' })
-    } catch (e) {
-        console.error(e)
-        res.status(500).json({ error: '서버 에러' })
-    }
-})
-
-// 내 노래 조회
-router.get('/songs', async (req, res) => {
-    const auth = req.headers.authorization?.split(' ')[1]
-    if (!auth) return res.status(401).json({ error: '로그인이 필요합니다.' })
-
-    let userId
-    try {
-        userId = jwt.verify(auth, process.env.JWT_SECRET).userId
-    } catch {
-        return res.status(401).json({ error: '토큰이 유효하지 않습니다.' })
-    }
-    try {
-        const [rows] = await pool.execute(
-            'SELECT id, prompt, lyrics, audio_url, created_at FROM songs WHERE user_id = ? ORDER BY created_at DESC',
-            [userId]
-        )
-        res.json(rows)
-    } catch (e) {
-        console.error(e)
-        res.status(500).json({ error: '서버 에러' })
-    }
-})
-
-module.exports = router
+module.exports = router;
