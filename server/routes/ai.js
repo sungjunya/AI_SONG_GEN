@@ -4,11 +4,9 @@ const express = require('express');
 const axios = require('axios');
 const router = express.Router();
 
-const OPENAI_URL = 'https://api.openai.com/v1/chat/completions';
-
-// -------------------------
+// ------------------------------
 // 1) 가사 생성 (/generate-lyrics)
-// -------------------------
+// ------------------------------
 router.post('/generate-lyrics', async (req, res) => {
     const { prompt } = req.body;
     if (!prompt) {
@@ -17,7 +15,7 @@ router.post('/generate-lyrics', async (req, res) => {
     try {
         const apiKey = process.env.OPENAI_API_KEY;
         const { data } = await axios.post(
-            OPENAI_URL,
+            'https://api.openai.com/v1/chat/completions',
             {
                 model: 'gpt-3.5-turbo',
                 messages: [
@@ -34,16 +32,16 @@ router.post('/generate-lyrics', async (req, res) => {
                 }
             }
         );
-        return res.json({ lyrics: data.choices[0].message.content.trim() });
-    } catch (err) {
-        console.error('가사 생성 에러:', err.response?.data || err.message);
-        return res.status(500).json({ error: '가사 생성 실패: ' + err.message });
+        res.json({ lyrics: data.choices[0].message.content.trim() });
+    } catch (e) {
+        console.error('가사 생성 에러:', e);
+        res.status(500).json({ error: '가사 생성 실패: ' + e.message });
     }
 });
 
-// -------------------------
+// ------------------------------
 // 2) 멜로디 설명 생성 (/generate-melody)
-// -------------------------
+// ------------------------------
 router.post('/generate-melody', async (req, res) => {
     const { prompt } = req.body;
     if (!prompt) {
@@ -52,12 +50,12 @@ router.post('/generate-melody', async (req, res) => {
     try {
         const apiKey = process.env.OPENAI_API_KEY;
         const { data } = await axios.post(
-            OPENAI_URL,
+            'https://api.openai.com/v1/chat/completions',
             {
                 model: 'gpt-3.5-turbo',
                 messages: [
                     { role: 'system', content: '너는 한국어로 노래의 멜로디와 음악 스타일을 설명하는 전문가야.' },
-                    { role: 'user', content: `한국어로 ${prompt}을 주제로 한 감성적인 노래의 멜로디와 음악 스타일을 4~5문장으로 설명해줘.` }
+                    { role: 'user', content: `한국어로 ${prompt}을 주제로 한 멜로디와 음악 스타일을 설명해줘.` }
                 ],
                 max_tokens: 150,
                 temperature: 0.8
@@ -69,10 +67,10 @@ router.post('/generate-melody', async (req, res) => {
                 }
             }
         );
-        return res.json({ melody: data.choices[0].message.content.trim() });
-    } catch (err) {
-        console.error('멜로디 생성 에러:', err.response?.data || err.message);
-        return res.status(500).json({ error: '멜로디 생성 실패: ' + err.message });
+        res.json({ melody: data.choices[0].message.content.trim() });
+    } catch (e) {
+        console.error('멜로디 생성 에러:', e);
+        res.status(500).json({ error: '멜로디 생성 실패: ' + e.message });
     }
 });
 

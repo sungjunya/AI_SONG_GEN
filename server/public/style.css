@@ -1,86 +1,50 @@
 /* server/public/style.css */
 
-/* ------------------------------
-   1) 전체 기본 설정
-   ------------------------------ */
-* {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-}
-
+/* ===========================
+   공통 스타일
+   =========================== */
 body {
+    margin: 0;
     font-family: -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', sans-serif;
-    background-color: #f2f2f5;
+    background-color: #f2f4f7;
     color: #333;
-    min-height: 100vh;
-    position: relative;
-    padding-bottom: 50px;
-    /* 모바일서 푸터공간 등 고려 */
 }
 
-h1,
-h2,
-h3 {
-    margin-bottom: 12px;
-    font-weight: 700;
-}
-
-.section {
-    background-color: #fff;
-    border-radius: 8px;
-    padding: 20px;
-    margin: 16px auto;
-    width: 90%;
-    max-width: 900px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-/* ------------------------------
-     2) 헤더
-     ------------------------------ */
+/* ===========================
+     헤더
+     =========================== */
 .site-header {
-    background-color: #1d4ed8;
+    background-color: #0066ff;
     color: #fff;
     display: flex;
-    justify-content: space-between;
     align-items: center;
+    justify-content: space-between;
     padding: 16px 24px;
 }
 
-.header-left h1 {
+.site-header h1 {
+    margin: 0;
     font-size: 24px;
 }
 
-.header-right {
-    display: flex;
-    align-items: center;
-}
-
-.header-buttons button,
-.header-profile button {
-    margin-left: 8px;
-}
-
-.auth-btn {
-    background-color: #fff;
-    color: #1d4ed8;
-    border: 1px solid #1d4ed8;
-    border-radius: 4px;
-    padding: 6px 12px;
-    font-size: 14px;
-    cursor: pointer;
-    transition: background-color 0.2s;
-}
-
-.auth-btn:hover {
-    background-color: #e0e7ff;
-}
-
+.header-buttons,
 .header-profile {
     display: flex;
     align-items: center;
     gap: 8px;
+}
+
+.auth-btn {
+    background-color: #ffffff;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 8px 12px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.auth-btn:hover {
+    background-color: #f0f0f0;
 }
 
 .header-profile.hidden,
@@ -88,9 +52,184 @@ h3 {
     display: none;
 }
 
-/* ------------------------------
-     3) 모달 공통 스타일
-     ------------------------------ */
+/* ===========================
+     섹션 (메인 영역)
+     =========================== */
+.section {
+    background-color: #fff;
+    margin: 16px auto;
+    padding: 16px 24px;
+    max-width: 800px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.section.hidden {
+    display: none;
+}
+
+.section h2 {
+    margin-top: 0;
+    font-size: 20px;
+    border-bottom: 1px solid #e5e5e5;
+    padding-bottom: 4px;
+}
+
+/* ===========================
+     입력 그룹
+     =========================== */
+.input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 12px;
+}
+
+.prompt-input {
+    width: 100%;
+    padding: 8px 12px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+/* ===========================
+     드롭존 (이미지 업로드)
+     =========================== */
+.drop-zone {
+    margin-top: 12px;
+    border: 2px dashed #ccc;
+    border-radius: 6px;
+    padding: 24px;
+    text-align: center;
+    background-color: #fafafa;
+    cursor: pointer;
+}
+
+.drop-zone.dragover {
+    border-color: #0066ff;
+    background-color: #e8f0ff;
+}
+
+/* ===========================
+     옵션 버튼
+     =========================== */
+.options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.option-btn {
+    padding: 8px 16px;
+    background-color: #e9ecef;
+    border-radius: 20px;
+    cursor: pointer;
+    user-select: none;
+    font-size: 14px;
+    color: #333;
+    transition: background-color 0.2s;
+}
+
+.option-btn.active {
+    background-color: #0066ff;
+    color: #fff;
+}
+
+/* ===========================
+     체크박스
+     =========================== */
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.checkbox-label input {
+    transform: scale(1.2);
+}
+
+/* ===========================
+     결과 박스 (가사 / 멜로디)
+     =========================== */
+.results {
+    margin-top: 16px;
+}
+
+.result-box {
+    width: 100%;
+    background-color: #f8f9fa;
+    border-radius: 4px;
+    padding: 8px;
+    white-space: pre-wrap;
+}
+
+.result-box:empty {
+    color: #999;
+}
+
+/* ===========================
+     노래 리스트
+     =========================== */
+.song-list {
+    list-style: none;
+    padding-left: 0;
+    margin: 12px 0 0 0;
+}
+
+.song-list li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid #e5e5e5;
+    padding: 8px 0;
+}
+
+.song-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.prompt-text {
+    font-size: 16px;
+    margin: 0;
+}
+
+.meta-text {
+    font-size: 12px;
+    color: #666;
+}
+
+/* ===========================
+     좋아요 · 댓글 버튼
+     =========================== */
+.like-btn,
+.comment-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 18px;
+    margin-left: 8px;
+}
+
+.like-btn.liked {
+    color: #e74c3c;
+}
+
+.like-btn.not-liked {
+    color: #aaa;
+}
+
+.comment-btn {
+    color: #555;
+}
+
+/* ===========================
+     댓글 모달 (팝업창)
+     =========================== */
 .modal {
     position: fixed;
     top: 0;
@@ -99,9 +238,8 @@ h3 {
     height: 100%;
     background-color: rgba(0, 0, 0, 0.4);
     display: flex;
-    justify-content: center;
     align-items: center;
-    z-index: 999;
+    justify-content: center;
 }
 
 .modal.hidden {
@@ -110,245 +248,31 @@ h3 {
 
 .modal-content {
     background-color: #fff;
-    border-radius: 8px;
-    padding: 24px;
     width: 90%;
-    max-width: 400px;
+    max-width: 500px;
+    border-radius: 8px;
+    padding: 16px 24px;
     position: relative;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
 }
 
-.modal-content.large {
-    max-width: 600px;
-}
-
-.close {
+.modal-content .close {
     position: absolute;
     top: 12px;
     right: 12px;
-    font-size: 20px;
-    font-weight: 700;
+    font-size: 24px;
     cursor: pointer;
 }
 
-/* ------------------------------
-     4) 입력창·버튼
-     ------------------------------ */
-.input-group {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    margin-top: 16px;
-}
-
-.prompt-input {
-    width: 100%;
-    padding: 10px 14px;
-    font-size: 14px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    outline: none;
-}
-
-.prompt-input:focus {
-    border-color: #1d4ed8;
-}
-
-.generate-btn {
-    background-color: #1d4ed8;
-    color: #fff;
-    border: none;
-    border-radius: 4px;
-    padding: 10px 16px;
-    font-size: 16px;
-    cursor: pointer;
-    transition: background-color 0.2s;
-}
-
-.generate-btn:hover {
-    background-color: #2563eb;
-}
-
-/* 메시지 (성공/에러) */
-.message {
-    font-size: 14px;
-    margin-top: 8px;
-}
-
-.message.error {
-    color: #dc2626;
-}
-
-.message.success {
-    color: #16a34a;
-}
-
-/* ------------------------------
-     5) 드롭존(이미지 업로드)
-     ------------------------------ */
-.drop-zone {
-    width: 100%;
-    height: 120px;
-    border: 2px dashed #ccc;
-    border-radius: 6px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-top: 8px;
-    transition: border-color 0.2s, background-color 0.2s;
-}
-
-.drop-zone.dragover {
-    border-color: #1d4ed8;
-    background-color: #f0f4ff;
-}
-
-/* ------------------------------
-     6) 옵션 버튼
-     ------------------------------ */
-.options {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-top: 12px;
-}
-
-.option-btn {
-    background-color: #e5e7eb;
-    color: #374151;
-    padding: 8px 14px;
-    border-radius: 20px;
-    cursor: pointer;
-    user-select: none;
-    transition: background-color 0.2s, color 0.2s;
-}
-
-.option-btn.active {
-    background-color: #1d4ed8;
-    color: #fff;
-}
-
-.sub-options {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-top: 12px;
-}
-
-.sub-option {
-    background-color: #f3f4f6;
-    color: #374151;
-    padding: 6px 12px;
-    border-radius: 16px;
-    cursor: pointer;
-    user-select: none;
-}
-
-.sub-option:hover {
-    background-color: #e0e7ff;
-}
-
-/* ------------------------------
-     7) 결과 박스
-     ------------------------------ */
-.results {
-    margin-top: 20px;
-}
-
-.result-box {
-    white-space: pre-wrap;
-    background-color: #f9fafb;
-    border: 1px solid #d1d5db;
-    border-radius: 4px;
-    padding: 12px;
-    margin-bottom: 16px;
-    font-size: 14px;
-    line-height: 1.5;
-}
-
-/* ------------------------------
-     8) 노래 목록 리스트
-     ------------------------------ */
-.song-list {
-    list-style: none;
-    margin-top: 12px;
-}
-
-.song-list li {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 10px 0;
-    border-bottom: 1px solid #e5e7eb;
-    font-size: 15px;
-}
-
-.song-list li:last-child {
-    border-bottom: none;
-}
-
-/* 노래 항목 안의 각 버튼 */
-.song-item-left {
-    flex: 1;
-}
-
-.song-item-right {
-    display: flex;
-    gap: 8px;
-    align-items: center;
-}
-
-/* 좋아요(★), 댓글(💬) 모양 */
-.favorite-btn,
-.comment-btn {
-    background-color: transparent;
-    border: none;
-    font-size: 18px;
-    cursor: pointer;
-    transition: color 0.2s;
-}
-
-.favorite-btn {
-    color: #6b7280;
-    /* 회색 */
-}
-
-.favorite-btn.liked {
-    color: #f59e0b;
-    /* 노란색(활성) */
-}
-
-.favorite-btn:hover {
-    color: #f59e0b;
-}
-
-.comment-btn {
-    color: #6b7280;
-}
-
-.comment-btn:hover {
-    color: #1d4ed8;
-}
-
-/* ------------------------------
-     9) 댓글 모달
-     ------------------------------ */
 .comment-list {
     list-style: none;
-    max-height: 300px;
-    overflow-y: auto;
+    padding-left: 0;
     margin: 12px 0;
 }
 
 .comment-list li {
-    padding: 8px 0;
-    border-bottom: 1px solid #e5e7eb;
+    margin-bottom: 8px;
     font-size: 14px;
-}
-
-.comment-field {
-    flex: 1;
 }
 
 .comment-input-group {
@@ -357,19 +281,40 @@ h3 {
     margin-top: 12px;
 }
 
-/* ------------------------------
-    10) 반응형 (기본)
-     ------------------------------ */
-@media screen and (max-width: 600px) {
-    .prompt-input {
-        font-size: 13px;
-    }
+.comment-input-group input {
+    flex: 1;
+}
 
-    .generate-btn {
-        font-size: 14px;
-    }
+/* ===========================
+     메시지(성공/에러)
+     =========================== */
+.message {
+    margin-top: 8px;
+    font-size: 14px;
+}
 
-    .header-left h1 {
-        font-size: 20px;
-    }
+.message.error {
+    color: #e74c3c;
+}
+
+.message.success {
+    color: #27ae60;
+}
+
+/* ===========================
+     버튼 스타일
+     =========================== */
+.generate-btn {
+    margin-top: 12px;
+    padding: 10px 16px;
+    background-color: #0066ff;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.generate-btn:hover {
+    background-color: #0052cc;
 }

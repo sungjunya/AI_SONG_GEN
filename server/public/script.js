@@ -1,331 +1,319 @@
 // server/public/script.js
 
-// --------------------------------------------
-// 1) 전역 변수 선언
-// --------------------------------------------
-let authToken = null;
-let currentUsername = null;
-let currentCommentSongId = null; // 댓글창 열 때 현재 노래 ID 저장
+// ——————————————————————————————
+// 1) 전역 변수 및 DOM 요소 참조
+// ——————————————————————————————
+let authToken = null;       // 로그인 성공 시 발급된 JWT 토큰
+let currentUser = null;     // 로그인된 사용자명(username)
+let currentSongIdForComments = null; // 댓글 모달이 열렸을 때 해당 songId
 
-// DOM 요소들
+// DOM Elements
 const loginBtn = document.getElementById('loginBtn');
 const signupBtn = document.getElementById('signupBtn');
 const logoutBtn = document.getElementById('logoutBtn');
-const profileSection = document.getElementById('profileSection');
-const headerControls = document.getElementById('headerControls');
 const profileName = document.getElementById('profileName');
 
 const loginModal = document.getElementById('loginModal');
 const signupModal = document.getElementById('signupModal');
+const commentModal = document.getElementById('commentModal');
+
 const closeLogin = document.getElementById('closeLogin');
 const closeSignup = document.getElementById('closeSignup');
-const loginSubmit = document.getElementById('loginSubmit');
-const signupSubmit = document.getElementById('signupSubmit');
+const closeComment = document.getElementById('closeComment');
+
 const loginEmail = document.getElementById('loginEmail');
 const loginPassword = document.getElementById('loginPassword');
+const loginSubmit = document.getElementById('loginSubmit');
+const loginMessage = document.getElementById('loginMessage');
+
 const signupEmail = document.getElementById('signupEmail');
 const signupPassword = document.getElementById('signupPassword');
 const signupUsername = document.getElementById('signupUsername');
-const loginMessage = document.getElementById('loginMessage');
+const signupSubmit = document.getElementById('signupSubmit');
 const signupMessage = document.getElementById('signupMessage');
 
 const generateSection = document.getElementById('generateSection');
+const mySongsSection = document.getElementById('mySongsSection');
+const publicSongsSection = document.getElementById('publicSongsSection');
+const mySongList = document.getElementById('mySongList');
+const publicSongList = document.getElementById('publicSongList');
+
 const promptInput = document.getElementById('promptInput');
 const dropZone = document.getElementById('dropZone');
 const imageInput = document.getElementById('imageInput');
-
 const generateBtn = document.getElementById('generateBtn');
-const resultsDiv = document.getElementById('results');
-const lyricsBox = document.getElementById('lyrics');
-const melodyBox = document.getElementById('melody');
 const saveSongBtn = document.getElementById('saveSongBtn');
+const sheetOption = document.getElementById('sheetOption');
+const lyricsPre = document.getElementById('lyrics');
+const melodyPre = document.getElementById('melody');
+const resultsDiv = document.getElementById('results');
 const saveMessage = document.getElementById('saveMessage');
 
-const mySongsSection = document.getElementById('mySongsSection');
-const songList = document.getElementById('songList');
-const allSongsSection = document.getElementById('allSongsSection');
-const allSongList = document.getElementById('allSongList');
-
-const commentModal = document.getElementById('commentModal');
-const closeComment = document.getElementById('closeComment');
 const commentList = document.getElementById('commentList');
 const commentInput = document.getElementById('commentInput');
 const commentSubmit = document.getElementById('commentSubmit');
 const commentMessage = document.getElementById('commentMessage');
 
-// 옵션 버튼들
-const mandatoryOptions = document.querySelectorAll('.mandatory-options .option-btn');
-const categoryOptions = document.querySelectorAll('.category-options .option-btn');
-const subOptionsContainer = document.getElementById('subOptions');
-const sheetOption = document.getElementById('sheetOption');
+// 옵션 토글 버튼들
+const mandatoryButtons = document.querySelectorAll('.mandatory-options .option-btn');
+const categoryButtons = document.querySelectorAll('.category-options .option-btn');
+const subOptionsDiv = document.getElementById('subOptions');
 
-// --------------------------------------------
-// 2) 페이지 초기화
-// --------------------------------------------
-window.addEventListener('DOMContentLoaded', () => {
-    // 로그인 상태가 아니라면, 로그인/회원가입 버튼만 보여주기
-    showLoggedOutUI();
-
-    // 드롭존 이벤트
-    setupDragDrop();
-
-    // 옵션 버튼 이벤트 설정
-    mandatoryOptions.forEach(btn => {
-        btn.addEventListener('click', () => {
-            mandatoryOptions.forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-        });
-    });
-    categoryOptions.forEach(btn => {
-        btn.addEventListener('click', () => toggleCategory(btn));
-    });
-
-    // 모달 열기/닫기
-    loginBtn.addEventListener('click', () => toggleModal(loginModal, true));
-    signupBtn.addEventListener('click', () => toggleModal(signupModal, true));
-    closeLogin.addEventListener('click', () => toggleModal(loginModal, false));
-    closeSignup.addEventListener('click', () => toggleModal(signupModal, false));
-    closeComment.addEventListener('click', () => toggleModal(commentModal, false));
-});
-
-// --------------------------------------------
-// 3) 모달 표시/숨김 함수
-// --------------------------------------------
-function toggleModal(modalEl, show) {
-    if (show) {
-        modalEl.classList.remove('hidden');
-    } else {
-        modalEl.classList.add('hidden');
-    }
+// ——————————————————————————————
+// 2) 모달 열기/닫기 함수
+// ——————————————————————————————
+function openModal(modalElem) {
+    modalElem.classList.remove('hidden');
+}
+function closeModal(modalElem) {
+    modalElem.classList.add('hidden');
 }
 
-// --------------------------------------------
-// 4) 로그인/회원가입/로그아웃 로직
-// --------------------------------------------
-async function signup() {
+// 로그인 모달 열기
+loginBtn.addEventListener('click', () => {
+    loginMessage.textContent = '';
+    loginEmail.value = '';
+    loginPassword.value = '';
+    openModal(loginModal);
+});
+
+// 회원가입 모달 열기
+signupBtn.addEventListener('click', () => {
     signupMessage.textContent = '';
-    const data = {
-        email: signupEmail.value.trim(),
-        password: signupPassword.value.trim(),
-        username: signupUsername.value.trim()
-    };
-    if (!data.email || !data.password || !data.username) {
-        return signupMessage.textContent = '모든 필드를 입력해주세요.';
+    signupEmail.value = '';
+    signupPassword.value = '';
+    signupUsername.value = '';
+    openModal(signupModal);
+});
+
+// 닫기 버튼 클릭 시 모달 닫기
+closeLogin.addEventListener('click', () => closeModal(loginModal));
+closeSignup.addEventListener('click', () => closeModal(signupModal));
+closeComment.addEventListener('click', () => closeModal(commentModal));
+
+// 모달 이외 영역 클릭 시 모달 닫기
+window.addEventListener('click', (e) => {
+    if (e.target === loginModal) closeModal(loginModal);
+    if (e.target === signupModal) closeModal(signupModal);
+    if (e.target === commentModal) closeModal(commentModal);
+});
+
+// ——————————————————————————————
+// 3) 인증(회원가입, 로그인, 로그아웃, 프로필) 처리
+// ——————————————————————————————
+
+// 회원가입 요청
+signupSubmit.addEventListener('click', async () => {
+    signupMessage.textContent = '';
+    const email = signupEmail.value.trim();
+    const password = signupPassword.value;
+    const username = signupUsername.value.trim();
+    if (!email || !password || !username) {
+        signupMessage.textContent = '모든 필드를 입력하세요.';
+        return;
     }
     try {
         const res = await fetch('/signup', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data)
+            body: JSON.stringify({ email, password, username })
         });
-        const json = await res.json();
-        if (json.error) {
-            signupMessage.textContent = json.error;
+        const data = await res.json();
+        if (res.ok) {
+            signupMessage.style.color = 'green';
+            signupMessage.textContent = data.message || '회원가입 성공';
+            // 1초 후 모달 닫기
+            setTimeout(() => {
+                closeModal(signupModal);
+            }, 1000);
         } else {
-            // 회원가입 성공 시 로그인 모달로 전환
-            toggleModal(signupModal, false);
-            toggleModal(loginModal, true);
-            signupEmail.value = signupPassword.value = signupUsername.value = '';
-            signupMessage.textContent = '';
+            signupMessage.style.color = 'red';
+            signupMessage.textContent = data.error;
         }
     } catch (err) {
-        signupMessage.textContent = '네트워크 오류, 나중에 다시 시도하세요.';
+        console.error('회원가입 에러:', err);
+        signupMessage.style.color = 'red';
+        signupMessage.textContent = '회원가입 중 오류가 발생했습니다.';
     }
-}
+});
 
-async function login() {
+// 로그인 요청
+loginSubmit.addEventListener('click', async () => {
     loginMessage.textContent = '';
-    const data = {
-        email: loginEmail.value.trim(),
-        password: loginPassword.value.trim()
-    };
-    if (!data.email || !data.password) {
-        return loginMessage.textContent = '이메일과 비밀번호를 입력해주세요.';
+    const email = loginEmail.value.trim();
+    const password = loginPassword.value;
+    if (!email || !password) {
+        loginMessage.textContent = '이메일과 비밀번호를 입력하세요.';
+        return;
     }
     try {
         const res = await fetch('/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data)
+            body: JSON.stringify({ email, password })
         });
-        const json = await res.json();
-        if (json.error) {
-            loginMessage.textContent = json.error;
+        const data = await res.json();
+        if (res.ok && data.token) {
+            authToken = data.token;
+            currentUser = data.username;  // 서버가 반환한 username
+            // 프로필 영역 업데이트
+            profileName.textContent = `안녕하세요, 🎵${currentUser}님`;
+            document.getElementById('headerControls').classList.add('hidden');
+            document.getElementById('profileSection').classList.remove('hidden');
+
+            // 모달 닫기
+            closeModal(loginModal);
+
+            // 로그인 성공 후 메인 섹션 및 노래 리스트 보여주기
+            generateSection.classList.remove('hidden');
+            mySongsSection.classList.remove('hidden');
+            publicSongsSection.classList.remove('hidden');
+
+            await loadMySongs();
+            await loadPublicSongs();
         } else {
-            // 로그인 성공
-            authToken = json.token;
-            currentUsername = json.username;
-            loginEmail.value = loginPassword.value = '';
-            loginMessage.textContent = '';
-            toggleModal(loginModal, false);
-            showLoggedInUI();
-            loadMySongs();
-            loadAllSongs();
+            loginMessage.style.color = 'red';
+            loginMessage.textContent = data.error || '로그인 실패';
         }
     } catch (err) {
-        loginMessage.textContent = '네트워크 오류, 나중에 다시 시도하세요.';
+        console.error('로그인 에러:', err);
+        loginMessage.style.color = 'red';
+        loginMessage.textContent = '로그인 중 오류가 발생했습니다.';
     }
-}
+});
 
-function logout() {
+// 로그아웃 처리
+logoutBtn.addEventListener('click', () => {
     authToken = null;
-    currentUsername = null;
-    showLoggedOutUI();
-}
+    currentUser = null;
+    // 프로필 숨기고 로그인/회원가입 버튼 보이기
+    document.getElementById('profileSection').classList.add('hidden');
+    document.getElementById('headerControls').classList.remove('hidden');
 
-// UI: 로그인 전
-function showLoggedOutUI() {
-    headerControls.classList.remove('hidden');
-    profileSection.classList.add('hidden');
+    // 메인 섹션 숨기기
     generateSection.classList.add('hidden');
     mySongsSection.classList.add('hidden');
-    allSongsSection.classList.add('hidden');
-}
+    publicSongsSection.classList.add('hidden');
 
-// UI: 로그인 후
-function showLoggedInUI() {
-    headerControls.classList.add('hidden');
-    profileSection.classList.remove('hidden');
-    profileName.textContent = `안녕하세요, ${currentUsername}님`;
-    generateSection.classList.remove('hidden');
-    mySongsSection.classList.remove('hidden');
-    allSongsSection.classList.remove('hidden');
-}
-logoutBtn.addEventListener('click', logout);
-loginSubmit.addEventListener('click', login);
-signupSubmit.addEventListener('click', signup);
+    // 리스트 초기화
+    mySongList.innerHTML = '';
+    publicSongList.innerHTML = '';
+});
 
-// --------------------------------------------
-// 5) 드래그 & 드롭(이미지 업로드) 설정
-// --------------------------------------------
-function setupDragDrop() {
-    dropZone.addEventListener('click', () => imageInput.click());
+// ——————————————————————————————
+// 4) AI 가사·멜로디 생성 & 노래 저장
+// ——————————————————————————————
 
-    dropZone.addEventListener('dragover', e => {
-        e.preventDefault();
-        dropZone.classList.add('dragover');
-    });
-    dropZone.addEventListener('dragleave', e => {
-        e.preventDefault();
-        dropZone.classList.remove('dragover');
-    });
-    dropZone.addEventListener('drop', e => {
-        e.preventDefault();
-        dropZone.classList.remove('dragover');
-        if (e.dataTransfer.files.length) {
-            handleFiles(e.dataTransfer.files);
-        }
-    });
-
-    imageInput.addEventListener('change', () => {
-        if (imageInput.files.length) {
-            handleFiles(imageInput.files);
-        }
-    });
-}
+dropZone.addEventListener('click', () => imageInput.click());
+dropZone.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    dropZone.classList.add('dragover');
+});
+dropZone.addEventListener('dragleave', () => {
+    dropZone.classList.remove('dragover');
+});
+dropZone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    dropZone.classList.remove('dragover');
+    if (e.dataTransfer.files.length) handleFiles(e.dataTransfer.files);
+});
+imageInput.addEventListener('change', () => {
+    if (imageInput.files.length) handleFiles(imageInput.files);
+});
 function handleFiles(files) {
     const file = files[0];
     if (!file.type.startsWith('image/')) {
-        return alert('이미지 파일만 업로드 가능합니다.');
+        alert('이미지 파일만 업로드 가능합니다.');
+        return;
     }
     const reader = new FileReader();
-    reader.onload = e => {
-        dropZone.innerHTML = `<img src="${e.target.result}" alt="Uploaded Image" style="max-height:80px; max-width:100%; border-radius:6px;" />`;
+    reader.onload = (e) => {
+        dropZone.innerHTML = `<img src="${e.target.result}" alt="" style="max-height:80px; max-width:100%; border-radius:6px;">`;
     };
     reader.readAsDataURL(file);
 }
 
-// --------------------------------------------
-// 6) 옵션 선택 관련 함수
-// --------------------------------------------
-function toggleCategory(btn) {
-    const cat = btn.dataset.cat;
-    const isActive = btn.classList.toggle('active');
-    if (!isActive) {
-        subOptionsContainer.innerHTML = '';
+// 옵션(가사+멜로디 / 가사만 / 멜로디만) 토글
+mandatoryButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+        mandatoryButtons.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+    });
+});
+function toggleCategory(btn, cat) {
+    const active = btn.classList.toggle('active');
+    if (!active) {
+        subOptionsDiv.innerHTML = '';
         return;
     }
-    // 나머지 카테고리버튼 비활성화
-    categoryOptions.forEach(b => { if (b !== btn) b.classList.remove('active') });
+    categoryButtons.forEach(b => { if (b !== btn) b.classList.remove('active'); });
 
     let opts = [];
-    if (cat === 'genre') {
-        opts = ['🎵 장르', '팝', '재즈', '클래식', '힙합', '일렉트로닉'];
-    } else if (cat === 'mood') {
-        opts = ['🎵 분위기', '활기찬', '슬픈', '로맨틱', '잔잔한'];
-    } else if (cat === 'activity') {
-        opts = ['🎵 활동', '집중', '러닝', '휴식', '공부', '여행'];
-    }
-    subOptionsContainer.innerHTML = opts
-        .map((o, i) => `<span class="sub-option" style="${i === 0 ? 'font-weight:bold' : ''}">${o}</span>`)
-        .join('');
+    if (cat === 'genre') opts = ['🎵 장르', '팝', '재즈', '클래식', '힙합', '일렉트로닉'];
+    if (cat === 'mood') opts = ['🎵 분위기', '활기찬', '슬픈', '로맨틱', '잔잔한'];
+    if (cat === 'activity') opts = ['🎵 활동', '집중', '러닝', '휴식', '공부', '여행'];
+
+    subOptionsDiv.innerHTML = opts.map((o, i) =>
+        `<span class="sub-option" style="${i === 0 ? 'font-weight:bold;' : ''}">${o}</span>`
+    ).join('');
 }
-
-// --------------------------------------------
-// 7) AI 생성 (가사·멜로디) + 저장
-// --------------------------------------------
-generateBtn.addEventListener('click', async () => {
-    const prompt = promptInput.value.trim();
-    if (!prompt) return alert('프롬프트를 입력하세요.');
-
-    // 결과 초기화
-    lyricsBox.textContent = '가사 생성 중...';
-    melodyBox.textContent = '멜로디 생성 중...';
-    resultsDiv.classList.remove('hidden');
-
-    const type = document.querySelector('.mandatory-options .active').dataset.type;
-    const calls = [];
-
-    if (type === 'both' || type === 'lyrics') {
-        calls.push(
-            fetch('/generate-lyrics', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ prompt })
-            })
-                .then(res => res.json())
-                .then(json => {
-                    if (json.error) lyricsBox.textContent = json.error;
-                    else lyricsBox.textContent = json.lyrics;
-                })
-        );
-    } else {
-        lyricsBox.textContent = '선택되지 않음';
-    }
-
-    if (type === 'both' || type === 'melody') {
-        calls.push(
-            fetch('/generate-melody', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ prompt })
-            })
-                .then(res => res.json())
-                .then(json => {
-                    if (json.error) melodyBox.textContent = json.error;
-                    else melodyBox.textContent = json.melody;
-                })
-        );
-    } else {
-        melodyBox.textContent = '선택되지 않음';
-    }
-
-    await Promise.all(calls);
-    // → 이후 “저장하기” 버튼을 누르면 노래 저장
+categoryButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+        const cat = btn.getAttribute('data-cat');
+        toggleCategory(btn, cat);
+    });
 });
 
+// 음악 생성 버튼 클릭 시
+generateBtn.addEventListener('click', async () => {
+    const prompt = promptInput.value.trim();
+    if (!prompt) {
+        alert('프롬프트를 입력하세요.');
+        return;
+    }
+
+    resultsDiv.classList.remove('hidden');
+    lyricsPre.textContent = '생성 중...';
+    melodyPre.textContent = '생성 중...';
+
+    const selectedType = document.querySelector('.mandatory-options .active').getAttribute('data-type');
+    const calls = [];
+    if (selectedType === 'both' || selectedType === 'lyrics') {
+        calls.push(fetch('/generate-lyrics', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ prompt })
+        })
+            .then(r => r.json())
+            .then(j => {
+                lyricsPre.textContent = j.lyrics || j.error;
+            })
+        );
+    }
+    if (selectedType === 'both' || selectedType === 'melody') {
+        calls.push(fetch('/generate-melody', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ prompt })
+        })
+            .then(r => r.json())
+            .then(j => {
+                melodyPre.textContent = j.melody || j.error;
+            })
+        );
+    }
+    await Promise.all(calls);
+});
+
+// 노래 저장 버튼 클릭 시
 saveSongBtn.addEventListener('click', async () => {
     saveMessage.textContent = '';
-    const data = {
-        prompt: promptInput.value.trim(),
-        lyrics: lyricsBox.textContent,
-        audio_url: null,
-        style: null
-    };
-
-    if (!data.prompt) {
-        return saveMessage.textContent = '프롬프트가 없습니다.';
-    }
+    const prompt = promptInput.value.trim();
+    const lyrics = lyricsPre.textContent;
+    const melody = melodyPre.textContent;
+    const style = document.querySelector('.category-options .active') ?
+        document.querySelector('.category-options .active').textContent : '';
+    if (!prompt) return alert('프롬프트가 필요합니다.');
 
     try {
         const res = await fetch('/songs', {
@@ -334,241 +322,271 @@ saveSongBtn.addEventListener('click', async () => {
                 'Content-Type': 'application/json',
                 'Authorization': 'Bearer ' + authToken
             },
-            body: JSON.stringify(data)
+            body: JSON.stringify({
+                prompt,
+                lyrics,
+                audio_url: null,
+                style
+            })
         });
-        const json = await res.json();
-        if (json.error) {
-            saveMessage.textContent = json.error;
+        const data = await res.json();
+        if (res.ok) {
+            saveMessage.style.color = 'green';
+            saveMessage.textContent = data.message || '저장 성공';
+            await loadMySongs();
+            await loadPublicSongs();
         } else {
-            saveMessage.textContent = json.message;
-            promptInput.value = '';
-            lyricsBox.textContent = '';
-            melodyBox.textContent = '';
-            resultsDiv.classList.add('hidden');
-            loadMySongs();
-            loadAllSongs();
+            saveMessage.style.color = 'red';
+            saveMessage.textContent = data.error;
         }
     } catch (err) {
-        saveMessage.textContent = '네트워크 오류, 저장 실패';
+        console.error('노래 저장 에러:', err);
+        saveMessage.style.color = 'red';
+        saveMessage.textContent = '노래 저장 중 오류가 발생했습니다.';
     }
 });
 
-// --------------------------------------------
-// 8) 내 노래 / 공개 노래 목록 불러오기
-// --------------------------------------------
+// ——————————————————————————————
+// 5) “내가 저장한 노래” & “공개된 모든 노래” 로드
+// ——————————————————————————————
+
 async function loadMySongs() {
-    songList.innerHTML = '';
+    if (!authToken) return;
+    mySongList.innerHTML = '';
     try {
-        const res = await fetch('/my-songs', {
+        const res = await fetch('/songs/my', {
             headers: { 'Authorization': 'Bearer ' + authToken }
         });
-        const arr = await res.json();
-        if (Array.isArray(arr)) {
-            arr.forEach(song => {
-                const li = document.createElement('li');
-                li.classList.add('song-item');
-
-                // 왼쪽: “[시간] 프롬프트”
-                const leftDiv = document.createElement('div');
-                leftDiv.classList.add('song-item-left');
-                leftDiv.textContent = `[${new Date(song.created_at).toLocaleString()}] ${song.prompt}`;
-
-                // 오른쪽: ★ 좋아요, 💬 댓글
-                const rightDiv = document.createElement('div');
-                rightDiv.classList.add('song-item-right');
-
-                const favBtn = document.createElement('button');
-                favBtn.innerHTML = '★';
-                favBtn.classList.add('favorite-btn');
-                favBtn.addEventListener('click', () => toggleFavorite(song.id, favBtn));
-
-                const commentBtn = document.createElement('button');
-                commentBtn.innerHTML = '💬';
-                commentBtn.classList.add('comment-btn');
-                commentBtn.addEventListener('click', () => openCommentModal(song.id));
-
-                rightDiv.append(favBtn, commentBtn);
-                li.append(leftDiv, rightDiv);
-                songList.appendChild(li);
+        const data = await res.json();
+        if (res.ok) {
+            data.forEach(song => {
+                const li = createSongListItem(song, true);
+                mySongList.appendChild(li);
             });
-            // 내 좋아요 상태 표시
-            updateMyFavoritesUI();
+        } else {
+            console.error('내 노래 불러오기 오류:', data.error);
         }
     } catch (err) {
-        console.error('내 노래 목록 불러오기 실패:', err);
+        console.error('내 노래 불러오기 예외:', err);
     }
 }
 
-async function loadAllSongs() {
-    allSongList.innerHTML = '';
+async function loadPublicSongs() {
+    publicSongList.innerHTML = '';
     try {
-        const res = await fetch('/songs');
-        const arr = await res.json();
-        if (Array.isArray(arr)) {
-            arr.forEach(song => {
-                const li = document.createElement('li');
-                li.classList.add('song-item');
-
-                const leftDiv = document.createElement('div');
-                leftDiv.classList.add('song-item-left');
-                leftDiv.textContent = `[${new Date(song.created_at).toLocaleString()}] ${song.username}님의 “${song.prompt}”`;
-
-                const rightDiv = document.createElement('div');
-                rightDiv.classList.add('song-item-right');
-
-                const favBtn = document.createElement('button');
-                favBtn.innerHTML = '★';
-                favBtn.classList.add('favorite-btn');
-                favBtn.dataset.songId = song.id;
-                favBtn.addEventListener('click', () => toggleFavorite(song.id, favBtn));
-
-                const commentBtn = document.createElement('button');
-                commentBtn.innerHTML = '💬';
-                commentBtn.classList.add('comment-btn');
-                commentBtn.addEventListener('click', () => openCommentModal(song.id));
-
-                rightDiv.append(favBtn, commentBtn);
-                li.append(leftDiv, rightDiv);
-                allSongList.appendChild(li);
+        const res = await fetch('/songs/public');
+        const data = await res.json();
+        if (res.ok) {
+            data.forEach(song => {
+                const li = createSongListItem(song, false);
+                publicSongList.appendChild(li);
             });
-            updateMyFavoritesUI();
+        } else {
+            console.error('공개 노래 불러오기 오류:', data.error);
         }
     } catch (err) {
-        console.error('공개 노래 목록 불러오기 실패:', err);
+        console.error('공개 노래 불러오기 예외:', err);
     }
 }
 
-// --------------------------------------------
-// 9) 좋아요(토글) - 클릭 시 추가/삭제
-// --------------------------------------------
-async function toggleFavorite(songId, buttonEl) {
-    if (!authToken) {
-        return alert('로그인 후 이용 가능합니다.');
-    }
-    // 버튼에 'liked' 클래스가 있으면 → 삭제 요청, 없으면 → 추가 요청
-    const isLiked = buttonEl.classList.contains('liked');
-    if (!isLiked) {
-        // 좋아요 추가
-        try {
-            const res = await fetch('/favorites', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': 'Bearer ' + authToken
-                },
-                body: JSON.stringify({ song_id: songId })
-            });
-            const json = await res.json();
-            if (json.error) {
-                console.error(json.error);
-                return;
-            }
-            buttonEl.classList.add('liked');
-        } catch (err) {
-            console.error('좋아요 추가 실패:', err);
-        }
+/**
+ * 노래 리스트 항목(li) 생성 함수
+ * @param {object} song  - { id, user_id, prompt, lyrics, audio_url, style, created_at, like_count }
+ * @param {boolean} isMy - 내 노래인가 여부
+ */
+function createSongListItem(song, isMy) {
+    const li = document.createElement('li');
+    li.dataset.songId = song.id;
+
+    // 노래 제목/프롬프트 + 메타 정보(작성자, 작성일)
+    const infoDiv = document.createElement('div');
+    infoDiv.classList.add('song-info');
+    const promptP = document.createElement('p');
+    promptP.classList.add('prompt-text');
+    if (isMy) {
+        promptP.textContent = `[${formatDate(song.created_at)}] ${song.prompt}`;
     } else {
-        // 좋아요 취소
+        promptP.textContent = `[${formatDate(song.created_at)}] ${song.user_id ? song.user_id + '님' : ''}의 “${song.prompt}”`;
+    }
+    const metaP = document.createElement('p');
+    metaP.classList.add('meta-text');
+    metaP.textContent = `스타일: ${song.style || '없음'}`;
+
+    infoDiv.appendChild(promptP);
+    infoDiv.appendChild(metaP);
+
+    // 버튼 그룹
+    const btnGroup = document.createElement('div');
+
+    // 1) 좋아요 버튼
+    const likeBtn = document.createElement('button');
+    likeBtn.classList.add('like-btn');
+    likeBtn.innerHTML = `★ <span class="like-count">${song.like_count || 0}</span>`;
+    // 초기 상태: 내가 좋아요했는지 확인
+    checkUserLiked(song.id).then((liked) => {
+        if (liked) {
+            likeBtn.classList.add('liked');
+        } else {
+            likeBtn.classList.add('not-liked');
+        }
+    });
+
+    likeBtn.addEventListener('click', async () => {
+        if (!authToken) {
+            alert('로그인 후 이용하세요.');
+            return;
+        }
         try {
-            const res = await fetch(`/favorites/${songId}`, {
-                method: 'DELETE',
+            const res = await fetch(`/favorites/toggle/${song.id}`, {
+                method: 'POST',
                 headers: { 'Authorization': 'Bearer ' + authToken }
             });
-            const json = await res.json();
-            if (json.error) {
-                console.error(json.error);
-                return;
+            const data = await res.json();
+            if (res.ok) {
+                // 버튼 색상 토글
+                if (data.liked) {
+                    likeBtn.classList.remove('not-liked');
+                    likeBtn.classList.add('liked');
+                } else {
+                    likeBtn.classList.remove('liked');
+                    likeBtn.classList.add('not-liked');
+                }
+                // 좋아요 개수 갱신
+                const cntRes = await fetch(`/favorites/count/${song.id}`);
+                const cntData = await cntRes.json();
+                if (cntRes.ok) {
+                    likeBtn.querySelector('.like-count').textContent = cntData.count;
+                }
+            } else {
+                console.error('좋아요 토글 실패:', data.error);
+                alert(data.error);
             }
-            buttonEl.classList.remove('liked');
         } catch (err) {
-            console.error('좋아요 취소 실패:', err);
+            console.error('좋아요 토글 예외:', err);
         }
-    }
+    });
+
+    // 2) 댓글 버튼
+    const commentBtn = document.createElement('button');
+    commentBtn.classList.add('comment-btn');
+    commentBtn.textContent = '💬';
+    commentBtn.addEventListener('click', () => {
+        if (!authToken) {
+            alert('로그인 후 이용하세요.');
+            return;
+        }
+        currentSongIdForComments = song.id;
+        openCommentModal(song.id);
+    });
+
+    btnGroup.appendChild(likeBtn);
+    btnGroup.appendChild(commentBtn);
+
+    li.appendChild(infoDiv);
+    li.appendChild(btnGroup);
+    return li;
 }
 
-// 내 좋아요 데이터 불러와서 UI 업데이트
-async function updateMyFavoritesUI() {
-    if (!authToken) return;
+// ——————————————————————————————
+// 6) 좋아요 상태(특정 사용자가 눌렀는지) 확인
+// ——————————————————————————————
+async function checkUserLiked(songId) {
+    if (!authToken) return false;
     try {
-        const res = await fetch('/favorites/my', {
+        const res = await fetch(`/favorites/user/${songId}`, {
             headers: { 'Authorization': 'Bearer ' + authToken }
         });
-        const favoritedIds = await res.json(); // [1, 2, 5, ...]
-        document.querySelectorAll('.favorite-btn').forEach(btn => {
-            const sid = parseInt(btn.dataset.songId);
-            if (favoritedIds.includes(sid)) {
-                btn.classList.add('liked');
-            } else {
-                btn.classList.remove('liked');
-            }
-        });
+        const data = await res.json();
+        if (res.ok) {
+            return data.liked;
+        }
+        return false;
     } catch (err) {
-        console.error('내 좋아요 상태 업데이트 실패:', err);
+        console.error('유저 좋아요 여부 확인 예외:', err);
+        return false;
     }
 }
 
-// --------------------------------------------
-// 10) 댓글 모달 열기 / 닫기 / 댓글 불러오기 / 등록
-// --------------------------------------------
-function openCommentModal(songId) {
+// ——————————————————————————————
+// 7) 댓글 모달 열기/닫기 및 댓글 CRUD
+// ——————————————————————————————
+async function openCommentModal(songId) {
     commentList.innerHTML = '';
     commentInput.value = '';
     commentMessage.textContent = '';
-    currentCommentSongId = songId;
-    toggleModal(commentModal, true);
-    loadComments(songId);
-}
 
-async function loadComments(songId) {
     try {
         const res = await fetch(`/comments/${songId}`);
-        const arr = await res.json();
-        commentList.innerHTML = '';
-        if (Array.isArray(arr)) {
-            arr.forEach(c => {
+        const data = await res.json();
+        if (res.ok) {
+            data.forEach(c => {
                 const li = document.createElement('li');
-                li.innerHTML = `<strong>${c.username}:</strong> ${c.content} <span class="comment-time">[${new Date(c.created_at).toLocaleString()}]</span>`;
+                li.textContent = `${c.username}: ${c.content} [${formatDate(c.created_at)}]`;
                 commentList.appendChild(li);
             });
         }
     } catch (err) {
-        console.error('댓글 불러오기 실패:', err);
+        console.error('댓글 목록 불러오기 예외:', err);
     }
+
+    openModal(commentModal);
 }
 
 commentSubmit.addEventListener('click', async () => {
     commentMessage.textContent = '';
-    if (!authToken) {
-        return alert('로그인 후 댓글을 달 수 있습니다.');
-    }
     const content = commentInput.value.trim();
     if (!content) {
-        return (commentMessage.textContent = '댓글을 입력하세요.');
+        commentMessage.textContent = '댓글을 입력하세요.';
+        return;
     }
     try {
-        const res = await fetch('/comments', {
+        const res = await fetch(`/comments/${currentSongIdForComments}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': 'Bearer ' + authToken
             },
-            body: JSON.stringify({ song_id: currentCommentSongId, content })
+            body: JSON.stringify({ content })
         });
-        const json = await res.json();
-        if (json.error) {
-            commentMessage.textContent = json.error;
+        const data = await res.json();
+        if (res.ok) {
+            await openCommentModal(currentSongIdForComments);
         } else {
-            commentInput.value = '';
-            loadComments(currentCommentSongId);
+            commentMessage.textContent = data.error;
         }
     } catch (err) {
-        commentMessage.textContent = '댓글 등록 실패';
-        console.error(err);
+        console.error('댓글 등록 예외:', err);
+        commentMessage.textContent = '댓글 등록 중 오류가 발생했습니다.';
     }
 });
 
-// --------------------------------------------
-// 11) 페이지 초기 진입 시, 로그인 상태가 남아있으면 
-//     토큰 체크 or 자동으로 목록 불러오기할 수도 있지만
-//     여기서는 브라우저를 닫았다 열면 재로그인이 필요합니다.
-// --------------------------------------------
+// ——————————————————————————————
+// 8) 날짜 포맷팅 유틸리티
+// ——————————————————————————————
+function formatDate(dateString) {
+    const d = new Date(dateString);
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const dd = String(d.getDate()).padStart(2, '0');
+    const hh = String(d.getHours()).padStart(2, '0');
+    const mi = String(d.getMinutes()).padStart(2, '0');
+    const formatted = `${yyyy}. ${mm}. ${dd}. ${padAmPm(d)} ${padHour(d)}:${mi}`;
+    return formatted;
+}
+function padAmPm(d) {
+    return d.getHours() < 12 ? '오전' : '오후';
+}
+function padHour(d) {
+    const h = d.getHours();
+    return String((h % 12) || 12).padStart(2, '0');
+}
+
+// ——————————————————————————————
+// 9) 페이지 로드 시 (초기 화면 설정)
+// ——————————————————————————————
+document.addEventListener('DOMContentLoaded', () => {
+    // 처음에는 로그인/회원가입만 보이고, 메인 섹션은 숨김
+    generateSection.classList.add('hidden');
+    mySongsSection.classList.add('hidden');
+    publicSongsSection.classList.add('hidden');
+});
