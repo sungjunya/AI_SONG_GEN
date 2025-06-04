@@ -1,112 +1,95 @@
 // server/routes/favorites.js
 
 const express = require('express');
+const pool = require('../db');
+const { verifyToken } = require('../middleware/authMiddleware');
+
 const router = express.Router();
-const mysql = require('mysql2/promise');
-const jwt = require('jsonwebtoken');
 
-// 커넥션 풀 생성
-const pool = mysql.createPool({
-    host: process.env.DB_HOST,
-    user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_NAME,
-    charset: 'utf8mb4',
-    waitForConnections: true,
-    connectionLimit: 10,
-    queueLimit: 0
-});
-
-// 토큰 검증 미들웨어
-async function verifyToken(req, res, next) {
-    const authHeader = req.headers.authorization || '';
-    const token = authHeader.split(' ')[1];
-    if (!token) {
-        return res.status(401).json({ error: '로그인이 필요합니다.' });
-    }
-    try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        req.userId = decoded.userId;
-        next();
-    } catch (err) {
-        return res.status(401).json({ error: '유효하지 않은 토큰입니다.' });
-    }
-}
-
-// ------------------------------
-// 1) 좋아요 토글 (추가 ↔ 삭제)
-//    POST /favorites/toggle/:songId
-//    헤더: Authorization: Bearer <token>
-// ------------------------------
+/**
+ * 1) 좋아요 추가/취소
+ *    - Method: POST
+ *    - Path:   /favorites/toggle/:songId
+ *    - Headers: Authorization: "Bearer <token>" (verifyToken 미들웨어 필요)
+ *    - 응답:   { liked: true } 또는 { liked: false }
+ */
 router.post('/favorites/toggle/:songId', verifyToken, async (req, res) => {
-    const songId = req.params.songId;
-    const userId = req.userId;
+    const userId = req.user.id;           // verifyToken 미들웨어로부터 설정된 유저 ID
+    const songId = req.params.songId;     // URL 파라미터로 전달된 song ID
 
     try {
-        // 이미 좋아요가 눌러져 있는지 확인
-        const [existing] = await pool.execute(
+        // 1) 현재 좋아요 상태 확인 (userId, songId 조합으로 조회)
+        const [existingRows] = await pool.query(
             'SELECT id FROM favorites WHERE user_id = ? AND song_id = ?',
             [userId, songId]
         );
 
-        if (existing.length > 0) {
-            // 좋아요가 이미 있으면 취소(삭제)
-            await pool.execute(
+        if (existingRows.length > 0) {
+            // 이미 좋아요가 되어 있으면 삭제(취소)
+            await pool.query(
                 'DELETE FROM favorites WHERE user_id = ? AND song_id = ?',
                 [userId, songId]
             );
-            return res.json({ message: '좋아요 취소', liked: false });
+            return res.json({ liked: false });
         } else {
-            // 좋아요가 없으면 추가(삽입)
-            await pool.execute(
+            // 좋아요가 안 되어 있으면 새로 삽입
+            await pool.query(
                 'INSERT INTO favorites (user_id, song_id) VALUES (?, ?)',
                 [userId, songId]
             );
-            return res.json({ message: '좋아요 등록', liked: true });
+            return res.json({ liked: true });
         }
-    } catch (error) {
-        console.error('좋아요 토글 에러:', error);
+    } catch (err) {
+        console.error('좋아요 토글 실패:', err);
         return res.status(500).json({ error: '좋아요 토글 중 오류가 발생했습니다.' });
     }
 });
 
-// ------------------------------
-// 2) 특정 노래 좋아요 개수 조회
-//    GET /favorites/count/:songId
-// ------------------------------
+/**
+ * 2) 특정 노래의 좋아요 수 조회
+ *    - Method: GET
+ *    - Path:   /favorites/count/:songId
+ *    - 인증:   불필요
+ *    - 응답:   { count: <숫자> }
+ */
 router.get('/favorites/count/:songId', async (req, res) => {
     const songId = req.params.songId;
+
     try {
-        const [rows] = await pool.execute(
+        const [rows] = await pool.query(
             'SELECT COUNT(*) AS cnt FROM favorites WHERE song_id = ?',
             [songId]
         );
-        const count = rows[0].cnt;
-        return res.json({ songId: Number(songId), count });
-    } catch (error) {
-        console.error('좋아요 개수 조회 에러:', error);
-        return res.status(500).json({ error: '좋아요 개수 조회 중 오류' });
+        // COUNT(*) 결과가 cnt 칼럼으로 반환됨
+        const count = rows[0].cnt || 0;
+        return res.json({ count });
+    } catch (err) {
+        console.error('좋아요 수 조회 실패:', err);
+        return res.status(500).json({ error: '좋아요 수를 가져오지 못했습니다.' });
     }
 });
 
-// ------------------------------
-// 3) 로그인된 사용자가 해당 노래에 좋아요했는지 여부 조회
-//    GET /favorites/user/:songId
-//    헤더: Authorization: Bearer <token>
-// ------------------------------
+/**
+ * 3) 사용자가 특정 노래에 좋아요를 눌렀는지 조회
+ *    - Method: GET
+ *    - Path:   /favorites/user/:songId
+ *    - Headers: Authorization: "Bearer <token>" (verifyToken 미들웨어 필요)
+ *    - 응답:   { liked: true } 또는 { liked: false }
+ */
 router.get('/favorites/user/:songId', verifyToken, async (req, res) => {
+    const userId = req.user.id;
     const songId = req.params.songId;
-    const userId = req.userId;
+
     try {
-        const [rows] = await pool.execute(
+        const [rows] = await pool.query(
             'SELECT id FROM favorites WHERE user_id = ? AND song_id = ?',
             [userId, songId]
         );
         const liked = rows.length > 0;
-        return res.json({ songId: Number(songId), liked });
-    } catch (error) {
-        console.error('유저 좋아요 여부 조회 에러:', error);
-        return res.status(500).json({ error: '유저 좋아요 여부 조회 중 오류' });
+        return res.json({ liked });
+    } catch (err) {
+        console.error('유저 좋아요 여부 조회 실패:', err);
+        return res.status(500).json({ error: '좋아요 여부를 확인하지 못했습니다.' });
     }
 });
 
