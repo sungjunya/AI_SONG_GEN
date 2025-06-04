@@ -35,6 +35,7 @@ const signupMessage = document.getElementById('signupMessage');
 const generateSection = document.getElementById('generateSection');
 const mySongsSection = document.getElementById('mySongsSection');
 const publicSongsSection = document.getElementById('publicSongsSection');
+
 const mySongList = document.getElementById('mySongList');
 const publicSongList = document.getElementById('publicSongList');
 
@@ -58,6 +59,7 @@ const commentMessage = document.getElementById('commentMessage');
 const mandatoryButtons = document.querySelectorAll('.mandatory-options .option-btn');
 const categoryButtons = document.querySelectorAll('.category-options .option-btn');
 const subOptionsDiv = document.getElementById('subOptions');
+
 
 // ——————————————————————————————
 // 2) 모달 열기/닫기 함수
@@ -98,6 +100,7 @@ window.addEventListener('click', (e) => {
     if (e.target === commentModal) closeModal(commentModal);
 });
 
+
 // ——————————————————————————————
 // 3) 인증(회원가입, 로그인, 로그아웃, 프로필) 처리
 // ——————————————————————————————
@@ -109,6 +112,7 @@ signupSubmit.addEventListener('click', async () => {
     const password = signupPassword.value;
     const username = signupUsername.value.trim();
     if (!email || !password || !username) {
+        signupMessage.style.color = 'red';
         signupMessage.textContent = '모든 필드를 입력하세요.';
         return;
     }
@@ -122,7 +126,6 @@ signupSubmit.addEventListener('click', async () => {
         if (res.ok) {
             signupMessage.style.color = 'green';
             signupMessage.textContent = data.message || '회원가입 성공';
-            // 1초 후 모달 닫기
             setTimeout(() => {
                 closeModal(signupModal);
             }, 1000);
@@ -143,6 +146,7 @@ loginSubmit.addEventListener('click', async () => {
     const email = loginEmail.value.trim();
     const password = loginPassword.value;
     if (!email || !password) {
+        loginMessage.style.color = 'red';
         loginMessage.textContent = '이메일과 비밀번호를 입력하세요.';
         return;
     }
@@ -199,6 +203,7 @@ logoutBtn.addEventListener('click', () => {
     mySongList.innerHTML = '';
     publicSongList.innerHTML = '';
 });
+
 
 // ——————————————————————————————
 // 4) AI 가사·멜로디 생성 & 노래 저장
@@ -391,7 +396,7 @@ async function loadPublicSongs() {
 
 /**
  * 노래 리스트 항목(li) 생성 함수
- * @param {object} song  - { id, user_id, prompt, lyrics, audio_url, style, created_at, like_count }
+ * @param {object} song  - { id, user_id, prompt, lyrics, audio_url, style, created_at }
  * @param {boolean} isMy - 내 노래인가 여부
  */
 function createSongListItem(song, isMy) {
@@ -417,12 +422,25 @@ function createSongListItem(song, isMy) {
 
     // 버튼 그룹
     const btnGroup = document.createElement('div');
+    btnGroup.classList.add('button-group');
 
     // 1) 좋아요 버튼
     const likeBtn = document.createElement('button');
     likeBtn.classList.add('like-btn');
-    likeBtn.innerHTML = `★ <span class="like-count">${song.like_count || 0}</span>`;
-    // 초기 상태: 내가 좋아요했는지 확인
+    // 초기에는 0으로 두고, 아래 fetch로 실제 개수를 받아와서 업데이트
+    likeBtn.innerHTML = `★ <span class="like-count">0</span>`;
+
+    // ———— 초기 좋아요 개수 불러오기 ————
+    fetch(`/favorites/count/${song.id}`)
+        .then(res => res.json())
+        .then(data => {
+            if (data.count !== undefined) {
+                likeBtn.querySelector('.like-count').textContent = data.count;
+            }
+        })
+        .catch(err => console.error('좋아요 수 초기 조회 실패:', err));
+
+    // ———— 사용자가 이미 좋아요를 눌렀는지 확인해서 버튼 스타일 적용 ————
     checkUserLiked(song.id).then((liked) => {
         if (liked) {
             likeBtn.classList.add('liked');
@@ -431,6 +449,7 @@ function createSongListItem(song, isMy) {
         }
     });
 
+    // 좋아요 버튼 클릭 시 토글 처리
     likeBtn.addEventListener('click', async () => {
         if (!authToken) {
             alert('로그인 후 이용하세요.');
@@ -454,7 +473,7 @@ function createSongListItem(song, isMy) {
                 // 좋아요 개수 갱신
                 const cntRes = await fetch(`/favorites/count/${song.id}`);
                 const cntData = await cntRes.json();
-                if (cntRes.ok) {
+                if (cntRes.ok && cntData.count !== undefined) {
                     likeBtn.querySelector('.like-count').textContent = cntData.count;
                 }
             } else {
@@ -506,6 +525,7 @@ async function checkUserLiked(songId) {
         return false;
     }
 }
+
 
 // ——————————————————————————————
 // 7) 댓글 모달 열기/닫기 및 댓글 CRUD
