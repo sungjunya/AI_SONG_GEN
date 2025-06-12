@@ -1,1 +1,1 @@
-# AI_SONG_GENERATOR
+bark모델 ssh로 학교 원격 서버 연결해서 사용중입니다. 
