@@ -45,6 +45,8 @@ app.use(commentRouter);
 //   6) 노래 요청 기능(선택)
 app.use(requestRouter);
 
+app.use('/audio', express.static(path.join(__dirname, 'audio')));
+
 //   7) 존재하지 않는 경로에 대한 404 응답
 app.use((req, res) => {
     res.status(404).json({ error: '존재하지 않는 엔드포인트입니다.' });

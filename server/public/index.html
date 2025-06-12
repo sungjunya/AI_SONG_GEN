@@ -102,6 +102,22 @@
             <p id="saveMessage" class="message success"></p>
         </div>
     </section>
+    <h3>생성된 멜로디</h3>
+    <pre id="melody" class="result-box"></pre>
+    <div id="voiceSection" class="hidden">
+        <h3>생성된 음성</h3>
+        <audio id="voicePlayer" controls></audio>
+      </div>
+
+    <!-- 오디오 플레이어 및 버튼 추가 -->
+    <audio id="audioPlayer" controls style="display:none;"></audio>
+    <div id="audioControls" style="display:none;">
+        <button id="playBtn">▶ 재생</button>
+        <button id="pauseBtn" disabled>⏸ 일시정지</button>
+    </div>
+
+    <button id="saveSongBtn" class="generate-btn">저장하기</button>
+    <p id="saveMessage" class="message success"></p>
 
     <!-- 내가 저장한 노래 -->
     <section id="mySongsSection" class="section hidden">

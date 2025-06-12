@@ -1,5 +1,3 @@
-// server/public/script.js
-
 // ——————————————————————————————
 // 1) 전역 변수 및 DOM 요소 참조
 // ——————————————————————————————
@@ -55,11 +53,55 @@ const commentInput = document.getElementById('commentInput');
 const commentSubmit = document.getElementById('commentSubmit');
 const commentMessage = document.getElementById('commentMessage');
 
-// 옵션 토글 버튼들
 const mandatoryButtons = document.querySelectorAll('.mandatory-options .option-btn');
 const categoryButtons = document.querySelectorAll('.category-options .option-btn');
 const subOptionsDiv = document.getElementById('subOptions');
 
+// ——————————————————————————————
+// 1-1) 오디오 재생 관련 DOM 및 변수 생성
+// ——————————————————————————————
+const audioPlayer = document.createElement('audio');
+audioPlayer.id = 'audioPlayer';
+audioPlayer.style.display = 'none';
+audioPlayer.controls = false; // 직접 만든 버튼으로 제어
+document.body.appendChild(audioPlayer);
+
+const audioControlsDiv = document.createElement('div');
+audioControlsDiv.id = 'audioControls';
+audioControlsDiv.style.display = 'none';
+audioControlsDiv.style.margin = '10px 0';
+audioControlsDiv.innerHTML = `
+  <button id="playBtn">▶ 재생</button>
+  <button id="pauseBtn" disabled>⏸ 일시정지</button>
+`;
+document.body.appendChild(audioControlsDiv);
+
+const playBtn = document.getElementById('playBtn');
+const pauseBtn = document.getElementById('pauseBtn');
+
+playBtn.addEventListener('click', () => {
+    audioPlayer.play();
+    playBtn.disabled = true;
+    pauseBtn.disabled = false;
+});
+pauseBtn.addEventListener('click', () => {
+    audioPlayer.pause();
+    playBtn.disabled = false;
+    pauseBtn.disabled = true;
+});
+audioPlayer.addEventListener('ended', () => {
+    playBtn.disabled = false;
+    pauseBtn.disabled = true;
+});
+
+// 오디오 소스 세팅 함수
+function setAudioSource(url) {
+    audioPlayer.src = url;
+    audioPlayer.style.display = 'block';
+    audioControlsDiv.style.display = 'block';
+    playBtn.disabled = false;
+    pauseBtn.disabled = true;
+}
 
 // ——————————————————————————————
 // 2) 모달 열기/닫기 함수
@@ -71,15 +113,12 @@ function closeModal(modalElem) {
     modalElem.classList.add('hidden');
 }
 
-// 로그인 모달 열기
 loginBtn.addEventListener('click', () => {
     loginMessage.textContent = '';
     loginEmail.value = '';
     loginPassword.value = '';
     openModal(loginModal);
 });
-
-// 회원가입 모달 열기
 signupBtn.addEventListener('click', () => {
     signupMessage.textContent = '';
     signupEmail.value = '';
@@ -87,25 +126,18 @@ signupBtn.addEventListener('click', () => {
     signupUsername.value = '';
     openModal(signupModal);
 });
-
-// 닫기 버튼 클릭 시 모달 닫기
 closeLogin.addEventListener('click', () => closeModal(loginModal));
 closeSignup.addEventListener('click', () => closeModal(signupModal));
 closeComment.addEventListener('click', () => closeModal(commentModal));
-
-// 모달 이외 영역 클릭 시 모달 닫기
 window.addEventListener('click', (e) => {
     if (e.target === loginModal) closeModal(loginModal);
     if (e.target === signupModal) closeModal(signupModal);
     if (e.target === commentModal) closeModal(commentModal);
 });
 
-
 // ——————————————————————————————
-// 3) 인증(회원가입, 로그인, 로그아웃, 프로필) 처리
+// 3) 인증 처리 (회원가입, 로그인, 로그아웃)
 // ——————————————————————————————
-
-// 회원가입 요청
 signupSubmit.addEventListener('click', async () => {
     signupMessage.textContent = '';
     const email = signupEmail.value.trim();
@@ -126,9 +158,7 @@ signupSubmit.addEventListener('click', async () => {
         if (res.ok) {
             signupMessage.style.color = 'green';
             signupMessage.textContent = data.message || '회원가입 성공';
-            setTimeout(() => {
-                closeModal(signupModal);
-            }, 1000);
+            setTimeout(() => { closeModal(signupModal); }, 1000);
         } else {
             signupMessage.style.color = 'red';
             signupMessage.textContent = data.error;
@@ -140,7 +170,6 @@ signupSubmit.addEventListener('click', async () => {
     }
 });
 
-// 로그인 요청
 loginSubmit.addEventListener('click', async () => {
     loginMessage.textContent = '';
     const email = loginEmail.value.trim();
@@ -159,20 +188,14 @@ loginSubmit.addEventListener('click', async () => {
         const data = await res.json();
         if (res.ok && data.token) {
             authToken = data.token;
-            currentUser = data.username;  // 서버가 반환한 username
-            // 프로필 영역 업데이트
+            currentUser = data.username;
             profileName.textContent = `안녕하세요, 🎵${currentUser}님`;
             document.getElementById('headerControls').classList.add('hidden');
             document.getElementById('profileSection').classList.remove('hidden');
-
-            // 모달 닫기
             closeModal(loginModal);
-
-            // 로그인 성공 후 메인 섹션 및 노래 리스트 보여주기
             generateSection.classList.remove('hidden');
             mySongsSection.classList.remove('hidden');
             publicSongsSection.classList.remove('hidden');
-
             await loadMySongs();
             await loadPublicSongs();
         } else {
@@ -186,29 +209,21 @@ loginSubmit.addEventListener('click', async () => {
     }
 });
 
-// 로그아웃 처리
 logoutBtn.addEventListener('click', () => {
     authToken = null;
     currentUser = null;
-    // 프로필 숨기고 로그인/회원가입 버튼 보이기
     document.getElementById('profileSection').classList.add('hidden');
     document.getElementById('headerControls').classList.remove('hidden');
-
-    // 메인 섹션 숨기기
     generateSection.classList.add('hidden');
     mySongsSection.classList.add('hidden');
     publicSongsSection.classList.add('hidden');
-
-    // 리스트 초기화
     mySongList.innerHTML = '';
     publicSongList.innerHTML = '';
 });
 
-
 // ——————————————————————————————
-// 4) AI 가사·멜로디 생성 & 노래 저장
+// 4) AI 가사·멜로디 생성 & 노래 저장 & 오디오 재생 처리
 // ——————————————————————————————
-
 dropZone.addEventListener('click', () => imageInput.click());
 dropZone.addEventListener('dragover', (e) => {
     e.preventDefault();
@@ -237,8 +252,6 @@ function handleFiles(files) {
     };
     reader.readAsDataURL(file);
 }
-
-// 옵션(가사+멜로디 / 가사만 / 멜로디만) 토글
 mandatoryButtons.forEach(btn => {
     btn.addEventListener('click', () => {
         mandatoryButtons.forEach(b => b.classList.remove('active'));
@@ -252,12 +265,10 @@ function toggleCategory(btn, cat) {
         return;
     }
     categoryButtons.forEach(b => { if (b !== btn) b.classList.remove('active'); });
-
     let opts = [];
     if (cat === 'genre') opts = ['🎵 장르', '팝', '재즈', '클래식', '힙합', '일렉트로닉'];
     if (cat === 'mood') opts = ['🎵 분위기', '활기찬', '슬픈', '로맨틱', '잔잔한'];
     if (cat === 'activity') opts = ['🎵 활동', '집중', '러닝', '휴식', '공부', '여행'];
-
     subOptionsDiv.innerHTML = opts.map((o, i) =>
         `<span class="sub-option" style="${i === 0 ? 'font-weight:bold;' : ''}">${o}</span>`
     ).join('');
@@ -269,7 +280,7 @@ categoryButtons.forEach(btn => {
     });
 });
 
-// 음악 생성 버튼 클릭 시
+// 음악 생성 버튼 클릭 시 — Bark 음원 생성 API 호출 및 오디오 로딩
 generateBtn.addEventListener('click', async () => {
     const prompt = promptInput.value.trim();
     if (!prompt) {
@@ -308,6 +319,31 @@ generateBtn.addEventListener('click', async () => {
         );
     }
     await Promise.all(calls);
+
+    // Bark 음원 생성 및 URL 받아서 오디오 세팅
+    try {
+        const res = await fetch('/songs', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + authToken
+            },
+            body: JSON.stringify({
+                prompt,
+                lyrics: lyricsPre.textContent,
+                style: document.querySelector('.category-options .active') ? document.querySelector('.category-options .active').textContent : ''
+            })
+        });
+        const data = await res.json();
+        if (res.ok && data.audioUrl) {
+            setAudioSource(data.audioUrl);
+        } else {
+            alert(data.error || '음원 생성에 실패했습니다.');
+        }
+    } catch (err) {
+        console.error('음원 생성 요청 실패:', err);
+        alert('음원 생성 중 오류가 발생했습니다.');
+    }
 });
 
 // 노래 저장 버튼 클릭 시
@@ -352,9 +388,8 @@ saveSongBtn.addEventListener('click', async () => {
 });
 
 // ——————————————————————————————
-// 5) “내가 저장한 노래” & “공개된 모든 노래” 로드
+// 5) 내가 저장한 노래 & 공개된 노래 불러오기
 // ——————————————————————————————
-
 async function loadMySongs() {
     if (!authToken) return;
     mySongList.innerHTML = '';
@@ -427,10 +462,9 @@ function createSongListItem(song, isMy) {
     // 1) 좋아요 버튼
     const likeBtn = document.createElement('button');
     likeBtn.classList.add('like-btn');
-    // 초기에는 0으로 두고, 아래 fetch로 실제 개수를 받아와서 업데이트
     likeBtn.innerHTML = `★ <span class="like-count">0</span>`;
 
-    // ———— 초기 좋아요 개수 불러오기 ————
+    // 초기 좋아요 개수 불러오기
     fetch(`/favorites/count/${song.id}`)
         .then(res => res.json())
         .then(data => {
@@ -440,7 +474,7 @@ function createSongListItem(song, isMy) {
         })
         .catch(err => console.error('좋아요 수 초기 조회 실패:', err));
 
-    // ———— 사용자가 이미 좋아요를 눌렀는지 확인해서 버튼 스타일 적용 ————
+    // 사용자가 이미 좋아요를 눌렀는지 확인해서 버튼 스타일 적용
     checkUserLiked(song.id).then((liked) => {
         if (liked) {
             likeBtn.classList.add('liked');
@@ -462,7 +496,6 @@ function createSongListItem(song, isMy) {
             });
             const data = await res.json();
             if (res.ok) {
-                // 버튼 색상 토글
                 if (data.liked) {
                     likeBtn.classList.remove('not-liked');
                     likeBtn.classList.add('liked');
@@ -470,7 +503,6 @@ function createSongListItem(song, isMy) {
                     likeBtn.classList.remove('liked');
                     likeBtn.classList.add('not-liked');
                 }
-                // 좋아요 개수 갱신
                 const cntRes = await fetch(`/favorites/count/${song.id}`);
                 const cntData = await cntRes.json();
                 if (cntRes.ok && cntData.count !== undefined) {
@@ -503,11 +535,12 @@ function createSongListItem(song, isMy) {
 
     li.appendChild(infoDiv);
     li.appendChild(btnGroup);
+
     return li;
 }
 
 // ——————————————————————————————
-// 6) 좋아요 상태(특정 사용자가 눌렀는지) 확인
+// 6) 좋아요 상태 확인 함수
 // ——————————————————————————————
 async function checkUserLiked(songId) {
     if (!authToken) return false;
@@ -525,7 +558,6 @@ async function checkUserLiked(songId) {
         return false;
     }
 }
-
 
 // ——————————————————————————————
 // 7) 댓글 모달 열기/닫기 및 댓글 CRUD
@@ -602,10 +634,9 @@ function padHour(d) {
 }
 
 // ——————————————————————————————
-// 9) 페이지 로드 시 (초기 화면 설정)
+// 9) 페이지 로드 시 초기 화면 설정
 // ——————————————————————————————
 document.addEventListener('DOMContentLoaded', () => {
-    // 처음에는 로그인/회원가입만 보이고, 메인 섹션은 숨김
     generateSection.classList.add('hidden');
     mySongsSection.classList.add('hidden');
     publicSongsSection.classList.add('hidden');
