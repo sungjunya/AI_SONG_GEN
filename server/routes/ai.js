@@ -27,7 +27,7 @@ router.post('/generate-lyrics', async (req, res) => {
                 model: 'gpt-3.5-turbo',
                 messages: [
                     { role: 'system', content: '너는 한국어로 감성적인 노래 가사를 만드는 전문가야.' },
-                    { role: 'user', content: `한국어로 "${prompt}"을 주제로 감성적인 노래 가사를 4줄로 만들어줘.` }
+                    { role: 'user', content: `한국어로 "${prompt}"을 주제로 감성적인 노래 가사로 만들어줘.` }
                 ],
                 max_tokens: 100,
                 temperature: 0.9
