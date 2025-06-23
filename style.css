@@ -1,0 +1,136 @@
+/* style.css 1 */
+body {
+    font-family: 'Roboto', sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #ffffff;
+}
+
+header {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 50px 50px;
+    border-bottom: 1px solid #ddd;
+    position: relative;
+}
+
+
+
+.logo {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.logo-img {
+    width: 200px; /* 원하는 크기로 조절 */
+    height: auto;
+    display: block;
+}
+
+
+.auth {
+    position: absolute;
+    right: 20px;
+}
+
+.auth button {
+    border-radius: 20px;
+    border: 1px solid #333;
+    padding: 5px 15px;
+    cursor: pointer;
+    background-color: white;
+    font-weight: bold;
+}
+
+button {
+    border-radius: 20px;
+    padding: 10px 20px;
+    cursor: pointer;
+    margin-right: 5px;
+    border: 1px solid #333; 
+    background-color: white;
+    font-weight: bold;
+}
+
+button.selected {
+    background-color: #000;
+    color: #fff;
+}
+
+main {
+    padding: 20px;
+}
+
+h2 {
+    margin-bottom: 10px;
+}
+
+section {
+    margin-bottom: 20px;
+}
+
+input[type="text"] {
+    width: calc(100% - 40px);
+    padding: 10px;
+    font-size: 16px;
+    margin: 0 auto;
+    display: block;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.main-buttons, .sub-buttons, .dynamic-buttons {
+    margin-top: 10px;
+}
+
+.dynamic-buttons button {
+    margin: 5px 5px 5px 0;
+}
+
+.generate-btn {
+    margin-top: 15px;
+    background-color: #325be2;
+    color: #fff;
+    border: none;
+    border-radius: 20px;
+    }
+
+.result h2 {
+    text-align: center;
+}
+
+.result-header {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 15px 50px;
+    border-bottom: 1px solid #ddd;
+    position: relative;
+}
+
+.result-img {
+    height: 20px; /* 크기 조정: 원하는 경우 width로도 가능 */
+    object-fit: contain;
+    width: 180px; /* 원하는 너비로 조정 */
+    height: auto; /* 비율 유지 */
+    display: block;
+    margin: 0 auto; 
+}
+
+
+.result .lyrics-result {
+    padding: 10px;
+    border: 1px solid #ddd;
+    height: 100px;
+    overflow: auto;
+    text-align: center;
+} 
+
+
+.music-player {
+    margin-top: 10px;
+    display: flex;       /* 음악 플레이어를 가운데 정렬하기 위한 설정 */
+    justify-content: center;
+}
