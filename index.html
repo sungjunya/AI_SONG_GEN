@@ -1,0 +1,50 @@
+<!-- index.html 1 -->
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title> melofy</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto&display=swap">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <div class="auth">
+            <button>login</button>
+            <button>join</button>
+        </div>
+        <div class="logo">
+            <img src="logo.png" alt="melofy Logo" class="logo-img">
+        </div>
+    </header>
+
+    <main>
+        <section class="prompt">
+            <h2>prompt</h2>
+            <input type="text" placeholder="프롬프트를 입력하세요">
+        </section>
+
+        <section class="options">
+            <h2>option</h2>
+            <div class="main-buttons">
+                <button class="main-btn">가사</button>
+                <button class="main-btn">멜로디</button>
+                <button class="main-btn">가사+멜로디</button>
+            </div>
+
+            <div class="sub-buttons">
+                <button class="sub-btn" data-type="genre">장르</button>
+                <button class="sub-btn" data-type="mood">분위기</button>
+                <button class="sub-btn" data-type="activity">활동</button>
+            </div>
+
+            <div class="dynamic-buttons" id="dynamic-buttons"></div>
+
+            <button class="generate-btn">음악 생성</button>
+        </section>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>
