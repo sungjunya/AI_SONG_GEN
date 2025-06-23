@@ -1,16 +1,16 @@
-<!-- server/public/index.html -->
 <!DOCTYPE html>
 <html lang="ko">
 
 <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>AI 음악 생성사이트 ♮</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>♮ AI 음악 생성 ♮</title>
+    <!-- 구글폰트 (Noto Sans KR) -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="style.css" />
 </head>
 
 <body>
-    <!-- 헤더 -->
     <header class="site-header">
         <h1>♮ AI 음악 생성 ♮</h1>
         <div id="headerControls" class="header-buttons">
@@ -19,11 +19,11 @@
         </div>
         <div id="profileSection" class="header-profile hidden">
             <span id="profileName"></span>
-            <button id="logoutBtn" class="auth-btn">로그아웃</button>
+            <button id="logoutBtn" class="auth-btn logout-btn">로그아웃</button>
         </div>
     </header>
 
-    <!-- 로그인 모달 -->
+    <!-- 모달들 -->
     <div id="loginModal" class="modal hidden">
         <div class="modal-content">
             <span id="closeLogin" class="close">&times;</span>
@@ -37,7 +37,6 @@
         </div>
     </div>
 
-    <!-- 회원가입 모달 -->
     <div id="signupModal" class="modal hidden">
         <div class="modal-content">
             <span id="closeSignup" class="close">&times;</span>
@@ -52,7 +51,6 @@
         </div>
     </div>
 
-    <!-- 댓글 모달 -->
     <div id="commentModal" class="modal hidden">
         <div class="modal-content">
             <span id="closeComment" class="close">&times;</span>
@@ -66,9 +64,9 @@
         </div>
     </div>
 
-    <!-- 메인 섹션 (로그인 후 보임) -->
+    <!-- 메인 섹션 -->
     <section id="generateSection" class="section hidden">
-        <h2>1. 프롬프트 또는 이미지</h2>
+        <h2>1. 프롬프트 또는 이미지 입력</h2>
         <div class="input-group">
             <input id="promptInput" type="text" placeholder="프롬프트를 입력하세요" class="prompt-input" />
             <div id="dropZone" class="drop-zone">
@@ -76,6 +74,7 @@
                 <input id="imageInput" type="file" accept="image/*" hidden />
             </div>
         </div>
+
         <h2>2. 옵션 선택</h2>
         <div class="options mandatory-options">
             <div class="option-btn active" data-type="both">가사+멜로디</div>
@@ -88,11 +87,14 @@
             <div class="option-btn" data-cat="activity">활동</div>
         </div>
         <div id="subOptions" class="sub-options"></div>
+
         <h2>3. 악보 옵션</h2>
         <label class="checkbox-label">
             <input id="sheetOption" type="checkbox" /> 악보 보기
         </label>
+
         <button id="generateBtn" class="generate-btn">음악 생성</button>
+
         <div id="results" class="results hidden">
             <h3>생성된 가사</h3>
             <pre id="lyrics" class="result-box"></pre>
@@ -102,22 +104,16 @@
             <p id="saveMessage" class="message success"></p>
         </div>
     </section>
-    <h3>생성된 멜로디</h3>
-    <pre id="melody" class="result-box"></pre>
-    <div id="voiceSection" class="hidden">
+
+    <!-- 음원 재생 섹션 -->
+    <section id="voiceSection" class="section hidden">
         <h3>생성된 음성</h3>
-        <audio id="voicePlayer" controls></audio>
-      </div>
-
-    <!-- 오디오 플레이어 및 버튼 추가 -->
-    <audio id="audioPlayer" controls style="display:none;"></audio>
-    <div id="audioControls" style="display:none;">
-        <button id="playBtn">▶ 재생</button>
-        <button id="pauseBtn" disabled>⏸ 일시정지</button>
-    </div>
-
-    <button id="saveSongBtn" class="generate-btn">저장하기</button>
-    <p id="saveMessage" class="message success"></p>
+        <audio id="audioPlayer" controls></audio>
+        <div id="audioControls" style="margin-top:10px;">
+            <button id="playBtn" class="audio-btn">▶ 재생</button>
+            <button id="pauseBtn" class="audio-btn" disabled>⏸ 일시정지</button>
+        </div>
+    </section>
 
     <!-- 내가 저장한 노래 -->
     <section id="mySongsSection" class="section hidden">
