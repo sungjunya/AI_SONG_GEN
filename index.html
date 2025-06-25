@@ -1,49 +1,108 @@
-<!-- index.html 1 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title> melofy</title>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto&display=swap">
+    <title>melofy_pix</title>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <header>
         <div class="auth">
-            <button>login</button>
-            <button>join</button>
+            <button class="auth-btn" id="login-btn">login</button>
+            <button class="auth-btn" id="join-btn">join</button>
+            <button class="auth-btn" id="logout-btn" style="display: none;">logout</button>
         </div>
-        <div class="logo">
-            <img src="logo.png" alt="melofy Logo" class="logo-img">
-        </div>
+        <h1>melofy</h1>
     </header>
+
+    <!-- Login Modal -->
+    <div id="login-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Login</h2>
+            <form id="login-form">
+                <input type="text" id="login-id" placeholder="ID" required>
+                <input type="password" id="login-password" placeholder="Password" required>
+                <button type="submit">Login</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Join Modal -->
+    <div id="join-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Join</h2>
+            <form id="join-form">
+                <input type="text" id="join-id" placeholder="ID" required>
+                <input type="password" id="join-password" placeholder="Password" required>
+                <input type="password" id="join-password-confirm" placeholder="Confirm Password" required>
+                <button type="submit">Join</button>
+            </form>
+        </div>
+    </div>
 
     <main>
         <section class="prompt">
             <h2>prompt</h2>
-            <input type="text" placeholder="프롬프트를 입력하세요">
+            <input type="text" placeholder="Enter a prompt">
+            <div class="image-upload">
+                <label for="image-input">image upload</label>
+                <input type="file" id="image-input" accept="image/*">
+                <div class="image-preview" id="image-preview"></div>
+            </div>
         </section>
 
         <section class="options">
             <h2>option</h2>
             <div class="main-buttons">
-                <button class="main-btn">가사</button>
-                <button class="main-btn">멜로디</button>
-                <button class="main-btn">가사+멜로디</button>
+                <button class="main-btn">lyrics</button>
+                <button class="main-btn">melody</button>
+                <button class="main-btn">lyrics+melody</button>
             </div>
-
             <div class="sub-buttons">
-                <button class="sub-btn" data-type="genre">장르</button>
-                <button class="sub-btn" data-type="mood">분위기</button>
-                <button class="sub-btn" data-type="activity">활동</button>
+                <button class="sub-btn" data-type="genre">genre</button>
+                <button class="sub-btn" data-type="mood">mood</button>
+                <button class="sub-btn" data-type="activity">activity</button>
             </div>
-
             <div class="dynamic-buttons" id="dynamic-buttons"></div>
+            <div class="score-options">
+                <h3>music sheet</h3>
+                <label>
+                    <input type="checkbox" id="show-score"> show music sheet
+                </label>
+            </div>
+            <button class="generate-btn">create a song</button>
+            <div class="generated-content">
+                <h3>generated lyrics</h3>
+                <textarea class="lyrics-preview" id="lyrics-preview" placeholder="Generated lyrics will appear here"></textarea>
+                <h3>generated melody</h3>
+                <div class="melody-preview" id="melody-preview">
+                    <audio controls>
+                        <source src="" type="audio/mp3">
+                        Your browser does not support the audio tag.
+                    </audio>
+                </div>
+            </div>
+        </section>
 
-            <button class="generate-btn">음악 생성</button>
+        <section class="saved-songs">
+            <h2>my music</h2>
+            <div class="song-list" id="my-songs"></div>
+        </section>
+
+        <section class="public-songs">
+            <h2>all music</h2>
+            <div class="song-list" id="public-songs"></div>
         </section>
     </main>
+
+    <footer>
+        <p>© 2025, Melofy Team. All music and lyrics generated on melofy.com are created by Artificial Intelligence owned and operated by the Melofy Team, and are licensed solely for personal, non-commercial use. All rights reserved. Public reproduction, recording, or distribution of this content is strictly prohibited.</p>
+        <p><a href="privacy-policy.html">Privacy Policy</a> | <a href="terms-of-use.html">Terms of Use</a> | <a href="dmca-policy.html">DMCA Policy</a></p>
+    </footer>
 
     <script src="script.js"></script>
 </body>
