@@ -1,136 +1,352 @@
-/* style.css 1 */
+:root {
+    --pico-black: #000000;
+    --pico-dark-gray: #333333;
+    --pico-light-gray: #666666;
+    --pico-white: #ffffff;
+    --pico-red: #ff0000;
+    --pico-orange: #ff9900;
+    --pico-yellow: #ffff00;
+    --pico-green: #00cc00;
+    --pico-blue: #0000ff;
+}
+
 body {
-    font-family: 'Roboto', sans-serif;
+    font-family: 'Press Start 2P', cursive;
     margin: 0;
     padding: 0;
-    background-color: #ffffff;
+    background-color: var(--pico-dark-gray);
+    color: var(--pico-white);
+    font-size: 12px;
+    image-rendering: pixelated;
 }
 
 header {
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: 50px 50px;
-    border-bottom: 1px solid #ddd;
+    padding: 20px;
+    background-color: var(--pico-black);
+    border-bottom: 4px solid var(--pico-light-gray);
     position: relative;
 }
 
-
-
-.logo {
+.auth {
     position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
+    top: 10px;
+    right: 20px;
+    display: flex;
+    gap: 15px;
+}
+
+.auth-btn {
+    background-color: var(--pico-blue);
+    border: 2px solid var(--pico-black);
+    color: var(--pico-white);
+    padding: 8px 16px;
+    font-family: 'Press Start 2P', cursive;
+    font-size: 10px;
+    cursor: pointer;
+}
+
+.auth-btn:hover {
+    background-color: var(--pico-yellow);
+    color: var(--pico-black);
 }
 
 .logo-img {
-    width: 200px; /* 원하는 크기로 조절 */
+    width: 128px;
     height: auto;
-    display: block;
-}
-
-
-.auth {
-    position: absolute;
-    right: 20px;
-}
-
-.auth button {
-    border-radius: 20px;
-    border: 1px solid #333;
-    padding: 5px 15px;
-    cursor: pointer;
-    background-color: white;
-    font-weight: bold;
-}
-
-button {
-    border-radius: 20px;
-    padding: 10px 20px;
-    cursor: pointer;
-    margin-right: 5px;
-    border: 1px solid #333; 
-    background-color: white;
-    font-weight: bold;
-}
-
-button.selected {
-    background-color: #000;
-    color: #fff;
+    image-rendering: pixelated;
 }
 
 main {
     padding: 20px;
 }
 
-h2 {
-    margin-bottom: 10px;
+h2, h3 {
+    font-size: 12px;
+    color: var(--pico-yellow);
+    margin-bottom: 2px;
 }
 
 section {
     margin-bottom: 20px;
 }
 
-input[type="text"] {
-    width: calc(100% - 40px);
-    padding: 10px;
-    font-size: 16px;
-    margin: 0 auto;
-    display: block;
-    border: 1px solid #ddd;
-    border-radius: 4px;
+.prompt input[type="text"] {
+    background-color: var(--pico-black);
+    border: 2px solid var(--pico-light-gray);
+    color: var(--pico-white);
+    padding: 8px;
+    font-family: 'Press Start 2P', cursive;
+    font-size: 10px;
+    width: calc(100% - 20px);
+}
+
+.image-upload {
+    margin-top: 10px;
+    text-align: left;
+}
+
+.image-upload label {
+    display: inline-block;
+    background-color: var(--pico-blue);
+    border: 2px solid var(--pico-black);
+    color: var(--pico-white);
+    padding: 8px 16px;
+    cursor: pointer;
+    font-family: 'Press Start 2P', cursive;
+    font-size: 10px;
+}
+
+#image-input {
+    display: none;
+}
+
+.image-preview {
+    margin-top: 10px;
+    max-width: 128px;
+    max-height: 128px;
+    image-rendering: pixelated;
+}
+
+.image-preview img {
+    max-width: 100%;
+    height: auto;
+    border: 2px solid var(--pico-light-gray);
 }
 
 .main-buttons, .sub-buttons, .dynamic-buttons {
+    display: flex;
+    gap: 15px;
     margin-top: 10px;
 }
 
-.dynamic-buttons button {
-    margin: 5px 5px 5px 0;
+.main-btn, .sub-btn, .dynamic-btn {
+    background-color: var(--pico-blue);
+    border: 2px solid var(--pico-black);
+    color: var(--pico-white);
+    padding: 8px 16px;
+    font-family: 'Press Start 2P', cursive;
+    font-size: 10px;
+    cursor: pointer;
+}
+
+.main-btn:hover, .sub-btn:hover, .dynamic-btn:hover {
+    background-color: var(--pico-yellow);
+    color: var(--pico-black);
+}
+
+.main-btn.selected, .sub-btn.selected, .dynamic-btn.selected {
+    background-color: var(--pico-red);
+    color: var(--pico-white);
+}
+
+.score-options {
+    margin-top: 20px;
+}
+
+.score-options label {
+    color: var(--pico-white);
+    font-family: 'Press Start 2P', cursive;
+    font-size: 10px;
+}
+
+.score-options input[type="checkbox"] {
+    margin-right: 8px;
+    accent-color: var(--pico-green);
 }
 
 .generate-btn {
-    margin-top: 15px;
-    background-color: #325be2;
-    color: #fff;
-    border: none;
-    border-radius: 20px;
-    }
-
-.result h2 {
-    text-align: center;
+    background-color: var(--pico-green);
+    border: 2px solid var(--pico-black);
+    color: var(--pico-black);
+    padding: 10px 20px;
+    font-family: 'Press Start 2P', cursive;
+    font-size: 10px;
+    cursor: pointer;
+    margin-top: 20px;
 }
 
-.result-header {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 15px 50px;
-    border-bottom: 1px solid #ddd;
-    position: relative;
+.generate-btn:hover {
+    background-color: var(--pico-orange);
 }
 
-.result-img {
-    height: 20px; /* 크기 조정: 원하는 경우 width로도 가능 */
-    object-fit: contain;
-    width: 180px; /* 원하는 너비로 조정 */
-    height: auto; /* 비율 유지 */
-    display: block;
-    margin: 0 auto; 
+.generated-content {
+    margin-top: 20px;
 }
 
-
-.result .lyrics-result {
+.lyrics-preview {
+    background-color: var(--pico-black);
+    border: 2px solid var(--pico-light-gray);
+    color: var(--pico-white);
     padding: 10px;
-    border: 1px solid #ddd;
-    height: 100px;
-    overflow: auto;
-    text-align: center;
-} 
-
-
-.music-player {
-    margin-top: 10px;
-    display: flex;       /* 음악 플레이어를 가운데 정렬하기 위한 설정 */
-    justify-content: center;
+    height: 80px;
+    width: calc(100% - 24px);
+    font-family: 'Press Start 2P', cursive;
+    font-size: 10px;
+    resize: vertical;
 }
+
+.melody-preview audio {
+    width: 100%;
+    max-width: 200px;
+    background-color: var(--pico-black);
+    border: 2px solid var(--pico-light-gray);
+}
+
+.saved-songs, .public-songs {
+    margin-top: 20px;
+}
+
+.song-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.song-item {
+    background-color: var(--pico-black);
+    border: 2px solid var(--pico-light-gray);
+    padding: 10px;
+}
+
+.song-info {
+    display: flex;
+    justify-content: space-between;
+    font-size: 10px;
+    color: var(--pico-white);
+}
+
+.song-actions {
+    margin-top: 10px;
+    display: flex;
+    gap: 15px;
+    align-items: center;
+}
+
+.like-btn {
+    background: none;
+    border: none;
+    color: var(--pico-yellow);
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.like-btn.liked {
+    color: var(--pico-red);
+}
+
+.like-count {
+    color: var(--pico-white);
+    font-family: 'Press Start 2P', cursive;
+    font-size: 10px;
+}
+
+.comment-input {
+    background-color: var(--pico-black);
+    border: 2px solid var(--pico-light-gray);
+    color: var(--pico-white);
+    padding: 4px;
+    font-family: 'Press Start 2P', cursive;
+    font-size: 8px;
+    width: 150px;
+}
+
+.comment-btn {
+    background-color: var(--pico-blue);
+    border: 2px solid var(--pico-black);
+    color: var(--pico-white);
+    font-family: 'Press Start 2P', cursive;
+    font-size: 8px;
+    padding: 4px 8px;
+    cursor: pointer;
+}
+
+.comment-btn:hover {
+    background-color: var(--pico-yellow);
+    color: var(--pico-black);
+}
+
+.comment-list {
+    margin-top: 10px;
+    font-family: 'Press Start 2P', cursive;
+    font-size: 8px;
+    color: var(--pico-white);
+}
+
+.comment-item {
+    margin-top: 5px;
+    padding: 5px;
+    border-top: 1px solid var(--pico-light-gray);
+}
+
+footer {
+    background-color: var(--pico-black);
+    color: var(--pico-white);
+    font-family: 'Press Start 2P', cursive;
+    font-size: 8px;
+    text-align: center;
+    padding: 10px;
+    border-top: 2px solid var(--pico-light-gray);
+    margin-top: 20px;
+}
+
+footer a {
+    color: var(--pico-blue);
+    text-decoration: none;
+    margin: 0 5px;
+}
+
+footer a:hover {
+    color: var(--pico-yellow);
+}
+
+/* Modal Styles */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    z-index: 1000;
+}
+
+.modal-content {
+    background: var(--pico-black);
+    border: 2px solid var(--pico-light-gray);
+    margin: 15% auto;
+    padding: 20px;
+    width: 300px;
+    text-align: center;
+}
+
+.modal-content input {
+    margin: 10px 0;
+    background-color: var(--pico-black);
+    border: 2px solid var(--pico-light-gray);
+    color: var(--pico-white);
+    padding: 8px;
+    font-family: 'Press Start 2P', cursive;
+    font-size: 10px;
+    width: calc(100% - 20px);
+}
+
+.close {
+    color: var(--pico-white);
+    float: right;
+    font-size: 20px;
+    cursor: pointer;
+}
+
+.close:hover {
+    color: var(--pico-yellow);
+}
+
+.policy-content {
+    text-align: left;
+    padding: 20px;
+}
+
